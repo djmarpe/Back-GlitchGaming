@@ -1262,17 +1262,17 @@
     },
     {
         "name": "laravel/framework",
-        "version": "v8.41.0",
-        "version_normalized": "8.41.0.0",
+        "version": "v8.42.0",
+        "version_normalized": "8.42.0.0",
         "source": {
             "type": "git",
             "url": "https://github.com/laravel/framework.git",
-            "reference": "05417155d886df8710e55c84e12622b52d83c47c"
+            "reference": "55b886683e0a019bcad0d9d70bb781a3de1a6755"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/laravel/framework/zipball/05417155d886df8710e55c84e12622b52d83c47c",
-            "reference": "05417155d886df8710e55c84e12622b52d83c47c",
+            "url": "https://api.github.com/repos/laravel/framework/zipball/55b886683e0a019bcad0d9d70bb781a3de1a6755",
+            "reference": "55b886683e0a019bcad0d9d70bb781a3de1a6755",
             "shasum": ""
         },
         "require": {
@@ -1386,7 +1386,7 @@
             "symfony/psr-http-message-bridge": "Required to use PSR-7 bridging features (^2.0).",
             "wildbit/swiftmailer-postmark": "Required to use Postmark mail driver (^3.0)."
         },
-        "time": "2021-05-11T14:00:02+00:00",
+        "time": "2021-05-18T15:37:44+00:00",
         "type": "library",
         "extra": {
             "branch-alias": {
@@ -1428,17 +1428,17 @@
     },
     {
         "name": "laravel/sail",
-        "version": "v1.5.1",
-        "version_normalized": "1.5.1.0",
+        "version": "v1.6.0",
+        "version_normalized": "1.6.0.0",
         "source": {
             "type": "git",
             "url": "https://github.com/laravel/sail.git",
-            "reference": "695f616c228c9df923a10282e4989feeae212c52"
+            "reference": "5d23474cd411b07f46980d05f9c38e7dc0d17460"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/laravel/sail/zipball/695f616c228c9df923a10282e4989feeae212c52",
-            "reference": "695f616c228c9df923a10282e4989feeae212c52",
+            "url": "https://api.github.com/repos/laravel/sail/zipball/5d23474cd411b07f46980d05f9c38e7dc0d17460",
+            "reference": "5d23474cd411b07f46980d05f9c38e7dc0d17460",
             "shasum": ""
         },
         "require": {
@@ -1447,7 +1447,7 @@
             "illuminate/support": "^8.0|^9.0",
             "php": "^7.3|^8.0"
         },
-        "time": "2021-05-11T21:00:37+00:00",
+        "time": "2021-05-18T15:44:02+00:00",
         "bin": [
             "bin/sail"
         ],
@@ -1548,6 +1548,62 @@
             "Tinker",
             "laravel",
             "psysh"
+        ]
+    },
+    {
+        "name": "laravel/ui",
+        "version": "v3.2.1",
+        "version_normalized": "3.2.1.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/laravel/ui.git",
+            "reference": "e2478cd0342a92ec1c8c77422553bda8ee004fd0"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/laravel/ui/zipball/e2478cd0342a92ec1c8c77422553bda8ee004fd0",
+            "reference": "e2478cd0342a92ec1c8c77422553bda8ee004fd0",
+            "shasum": ""
+        },
+        "require": {
+            "illuminate/console": "^8.0",
+            "illuminate/filesystem": "^8.0",
+            "illuminate/support": "^8.0",
+            "php": "^7.3|^8.0"
+        },
+        "time": "2021-04-27T18:17:41+00:00",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "3.x-dev"
+            },
+            "laravel": {
+                "providers": [
+                    "Laravel\\Ui\\UiServiceProvider"
+                ]
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "Laravel\\Ui\\": "src/",
+                "Illuminate\\Foundation\\Auth\\": "auth-backend/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Taylor Otwell",
+                "email": "taylor@laravel.com"
+            }
+        ],
+        "description": "Laravel UI utilities and presets.",
+        "keywords": [
+            "laravel",
+            "ui"
         ]
     },
     {
