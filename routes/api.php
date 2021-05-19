@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\torneosC;
+use App\Http\Controllers\noticiasC;
 
 /*
 |--------------------------------------------------------------------------
