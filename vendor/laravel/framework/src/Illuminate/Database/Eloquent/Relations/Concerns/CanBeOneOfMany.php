@@ -64,7 +64,9 @@ trait CanBeOneOfMany
     {
         $this->isOneOfMany = true;
 
-        $this->relationName = $relation ?: $this->guessRelationship();
+        $this->relationName = $relation ?: $this->getDefaultOneOfManyJoinAlias(
+            $this->guessRelationship()
+        );
 
         $keyName = $this->query->getModel()->getKeyName();
 
@@ -86,19 +88,19 @@ trait CanBeOneOfMany
                 throw new InvalidArgumentException("Invalid aggregate [{$aggregate}] used within ofMany relation. Available aggregates: MIN, MAX");
             }
 
-            $subQuery = $this->newSubQuery(
+            $subQuery = $this->newOneOfManySubQuery(
                 isset($previous) ? $previous['column'] : $this->getOneOfManySubQuerySelectColumns(),
                 $column, $aggregate
             );
 
             if (isset($previous)) {
-                $this->addJoinSub($subQuery, $previous['subQuery'], $previous['column']);
+                $this->addOneOfManyJoinSubQuery($subQuery, $previous['subQuery'], $previous['column']);
             } elseif (isset($closure)) {
                 $closure($subQuery);
             }
 
             if (array_key_last($columns) == $column) {
-                $this->addJoinSub($this->query, $subQuery, $column);
+                $this->addOneOfManyJoinSubQuery($this->query, $subQuery, $column);
             }
 
             $previous = [
@@ -141,6 +143,19 @@ trait CanBeOneOfMany
     }
 
     /**
+     * Get the default alias for the one of many inner join clause.
+     *
+     * @param  string  $relation
+     * @return string
+     */
+    protected function getDefaultOneOfManyJoinAlias($relation)
+    {
+        return $relation == $this->query->getModel()->getTable()
+            ? $relation.'_of_many'
+            : $relation;
+    }
+
+    /**
      * Get a new query for the related model, grouping the query by the given column, often the foreign key of the relationship.
      *
      * @param  string|array  $groupBy
@@ -148,7 +163,7 @@ trait CanBeOneOfMany
      * @param  string|null  $aggregate
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    protected function newSubQuery($groupBy, $column = null, $aggregate = null)
+    protected function newOneOfManySubQuery($groupBy, $column = null, $aggregate = null)
     {
         $subQuery = $this->query->getModel()
             ->newQuery();
@@ -174,13 +189,26 @@ trait CanBeOneOfMany
      * @param  string  $on
      * @return void
      */
-    protected function addJoinSub(Builder $parent, Builder $subQuery, $on)
+    protected function addOneOfManyJoinSubQuery(Builder $parent, Builder $subQuery, $on)
     {
         $parent->joinSub($subQuery, $this->relationName, function ($join) use ($on) {
             $join->on($this->qualifySubSelectColumn($on), '=', $this->qualifyRelatedColumn($on));
 
             $this->addOneOfManyJoinSubQueryConstraints($join, $on);
         });
+    }
+
+    /**
+     * Merge the relationship query joins to the given query builder.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $builder
+     * @return void
+     */
+    protected function mergeOneOfManyJoinsTo(Builder $query)
+    {
+        $query->getQuery()->joins = $this->query->getQuery()->joins;
+
+        $query->addBinding($this->query->getBindings(), 'join');
     }
 
     /**

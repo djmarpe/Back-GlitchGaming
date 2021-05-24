@@ -4,7 +4,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\torneosC;
-use App\Http\Controllers\noticiasC;
+use App\Http\Controllers\newsC;
+use App\Http\Controllers\userC;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,3 +23,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 
 Route::get('/ultimosTorneos', [App\Http\Controllers\torneosC::class, 'getUltimosTorneos']);
+
+Route::get('/ultimasNoticias', [App\Http\Controllers\newsC::class, 'getUltimasNoticias']);
+
+Route::post('/existeUsuario', [App\Http\Controllers\userC::class, 'existeUsuario']);
