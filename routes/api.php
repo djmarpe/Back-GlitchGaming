@@ -26,4 +26,8 @@ Route::get('/ultimosTorneos', [App\Http\Controllers\torneosC::class, 'getUltimos
 
 Route::get('/ultimasNoticias', [App\Http\Controllers\newsC::class, 'getUltimasNoticias']);
 
-Route::post('/existeUsuario', [App\Http\Controllers\userC::class, 'existeUsuario']);
+Route::post('/login', [App\Http\Controllers\userC::class, 'login']);
+
+// Rutas para modificar perfil
+
+Route::post('/editEmail', [App\Http\Controllers\userC::class, 'editEmail']);
