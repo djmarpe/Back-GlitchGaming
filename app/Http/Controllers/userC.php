@@ -92,7 +92,7 @@ class userC extends Controller {
     }
 
     public function enviarMail(Request $params) {
-        $correo = new Preguntas();
+        $correo = new Preguntas($params->all());
         $params->validate([
             'de' => 'required|string',
             'asunto' => 'required|string',
