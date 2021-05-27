@@ -49,5 +49,44 @@ class userC extends Controller {
         $usuario->save();
         return response()->json($usuario, 200);
     }
+    
+    public function editUsername(Request $params) {
+        //Hacemos una segunda validacion en el servidor
+        $params->validate([
+            'id' => 'required|integer',
+            'username' => 'required|string',
+        ]);
+        
+        $usuario = User::where("id",$params->id)->first();
+        $usuario["nombreUsuario"] = $params->username;
+        $usuario->save();
+        return response()->json($usuario, 200);
+    }
+    
+    public function editPassword(Request $params) {
+        //Hacemos una segunda validacion en el servidor
+        $params->validate([
+            'id' => 'required|integer',
+            'password' => 'required|string',
+        ]);
+        
+        $usuario = User::where("id",$params->id)->first();
+        $usuario["contra"] = $params->password;
+        $usuario->save();
+        return response()->json($usuario, 200);
+    }
+    
+    public function editDescription(Request $params) {
+        //Hacemos una segunda validacion en el servidor
+        $params->validate([
+            'id' => 'required|integer',
+            'password' => 'string',
+        ]);
+        
+        $usuario = User::where("id",$params->id)->first();
+        $usuario["descripcion"] = $params->description;
+        $usuario->save();
+        return response()->json($usuario, 200);
+    }
 
 }

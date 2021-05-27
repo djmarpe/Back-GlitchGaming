@@ -29,5 +29,7 @@ Route::get('/ultimasNoticias', [App\Http\Controllers\newsC::class, 'getUltimasNo
 Route::post('/login', [App\Http\Controllers\userC::class, 'login']);
 
 // Rutas para modificar perfil
-
 Route::post('/editEmail', [App\Http\Controllers\userC::class, 'editEmail']);
+Route::post('/editUsername', [App\Http\Controllers\userC::class, 'editUsername']);
+Route::post('/editPassword', [App\Http\Controllers\userC::class, 'editPassword']);
+Route::post('/editDescription', [App\Http\Controllers\userC::class, 'editDescription']);
