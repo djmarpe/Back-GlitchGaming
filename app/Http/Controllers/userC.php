@@ -99,8 +99,9 @@ class userC extends Controller {
             'mensaje' => 'required|string',
             'nombre' => 'required|string',
         ]);
-
+        
         Mail::to('gliitchgaming.esports@gmail.com')->send($correo);
+
         if (!Mail::failures()) {
             return response()->json([
                         'message' => 'Compruebe su correo electronico'
