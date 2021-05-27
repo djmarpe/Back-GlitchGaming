@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\asignacionRol;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\Preguntas;
 
 class userC extends Controller {
 
@@ -36,57 +38,78 @@ class userC extends Controller {
         ];
         return response()->json(($return), 200);
     }
-    
+
     public function editEmail(Request $params) {
         //Hacemos una segunda validacion en el servidor
         $params->validate([
             'id' => 'required|integer',
             'email' => 'required|string',
         ]);
-        
-        $usuario = User::where("id",$params->id)->first();
+
+        $usuario = User::where("id", $params->id)->first();
         $usuario["email"] = $params->email;
         $usuario->save();
         return response()->json($usuario, 200);
     }
-    
+
     public function editUsername(Request $params) {
         //Hacemos una segunda validacion en el servidor
         $params->validate([
             'id' => 'required|integer',
             'username' => 'required|string',
         ]);
-        
-        $usuario = User::where("id",$params->id)->first();
+
+        $usuario = User::where("id", $params->id)->first();
         $usuario["nombreUsuario"] = $params->username;
         $usuario->save();
         return response()->json($usuario, 200);
     }
-    
+
     public function editPassword(Request $params) {
         //Hacemos una segunda validacion en el servidor
         $params->validate([
             'id' => 'required|integer',
             'password' => 'required|string',
         ]);
-        
-        $usuario = User::where("id",$params->id)->first();
+
+        $usuario = User::where("id", $params->id)->first();
         $usuario["contra"] = $params->password;
         $usuario->save();
         return response()->json($usuario, 200);
     }
-    
+
     public function editDescription(Request $params) {
         //Hacemos una segunda validacion en el servidor
         $params->validate([
             'id' => 'required|integer',
             'password' => 'string',
         ]);
-        
-        $usuario = User::where("id",$params->id)->first();
+
+        $usuario = User::where("id", $params->id)->first();
         $usuario["descripcion"] = $params->description;
         $usuario->save();
         return response()->json($usuario, 200);
+    }
+
+    public function enviarMail(Request $params) {
+        $correo = new Preguntas();
+        $params->validate([
+            'de' => 'required|string',
+            'asunto' => 'required|string',
+            'mensaje' => 'required|string',
+            'nombre' => 'required|string',
+        ]);
+
+        Mail::to('gliitchgaming.esports@gmail.com')->send($correo);
+        if (!Mail::failures()) {
+            return response()->json([
+                        'message' => 'Compruebe su correo electronico'
+                            ], 200);
+        } else {
+            return response()->json([
+                        'message' => 'Error del sistema'
+                            ], 500);
+        }
     }
 
 }
