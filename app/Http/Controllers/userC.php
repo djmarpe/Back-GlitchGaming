@@ -92,7 +92,7 @@ class userC extends Controller {
     }
 
     public function enviarMail(Request $params) {
-        $correo = new Preguntas($params->all());
+        // Hacemos una segunda validación de los campos
         $params->validate([
             'de' => 'required|string',
             'asunto' => 'required|string',
@@ -100,13 +100,19 @@ class userC extends Controller {
             'nombre' => 'required|string',
         ]);
         
+        // Creamos el correo que vamos a enviar
+        $correo = new Preguntas($params->all());
+        
+        // Mandamos el correo a la dirección que queramos        
         Mail::to('gliitchgaming.esports@gmail.com')->send($correo);
 
         if (!Mail::failures()) {
+            // Si el mail se ha enviado devolvemos 200
             return response()->json([
-                        'message' => 'Compruebe su correo electronico'
+                        'message' => 'Correo enviado'
                             ], 200);
         } else {
+            // Si no ha podido enviarse devolvemos 500
             return response()->json([
                         'message' => 'Error del sistema'
                             ], 500);
