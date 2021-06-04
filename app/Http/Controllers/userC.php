@@ -3,39 +3,69 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+
 use App\Models\User;
 use App\Models\asignacionRol;
+use App\Models\rol;
+
 use Illuminate\Support\Facades\Mail;
 use App\Mail\Preguntas;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Controller;
+use App\Providers\RouteServiceProvider;
+use Illuminate\Foundation\Auth\AuthenticatesUsers;
 
 class userC extends Controller {
 
+    use AuthenticatesUsers;    
+    
     public function login(Request $params) {
-        $usuario = User::where("nombreUsuario", $params->username)
-                ->where("contra", $params->password)
-                ->get();
-
-        $usuario = json_decode($usuario[0]);
-
+        
+        $loginData = $params->validate([
+            'nombreUsuario' => 'string|required',
+            'password' => 'required'
+        ]);
+        
+//        dd($loginData);
+        
+        if (!auth()->attempt($loginData)) {
+            return response()->json(['message' => 'Login incorrecto. Revise las credenciales.'], 400);
+        }
+        
+        $user = auth()->user();
+        
+        if ($user->verificado != 1) {
+            return response()->json(['message' => 'Correo sin verificar'], 400);
+        }
+        
+        if ($user->estado == 0) {
+             return response()->json(['message' => 'Login incorrecto. Revise las credenciales.'], 400);
+        }
+        
+        $accessToken = auth()->user()->createToken('authToken')->accessToken;
 
         $rol = asignacionRol::with("roles", "users")
-                ->where('idUsuario', $usuario->id)
+                ->where('idUsuario', $user->id)
                 ->first();
 
         $return = [
-            'id' => $usuario->id,
-            'nombre' => $usuario->nombre,
-            'apellidos' => $usuario->apellidos,
-            'edad' => $usuario->edad,
-            'email' => $usuario->email,
-            'contra' => $usuario->contra,
-            'pais' => $usuario->pais,
-            'nombreUsuario' => $usuario->nombreUsuario,
-            'estado' => $usuario->estado,
-            'verificado' => $usuario->verificado,
-            'descripcion' => $usuario->descripcion,
+            'id' => $user->id,
+            'access_token' => $accessToken,
+            'nombre' => $user->nombre,
+            'apellidos' => $user->apellidos,
+            'edad' => $user->edad,
+            'email' => $user->email,
+            'password' => $user->contra,
+            'pais' => $user->pais,
+            'nombreUsuario' => $user->nombreUsuario,
+            'estado' => $user->estado,
+            'verificado' => $user->verificado,
+            'descripcion' => $user->descripcion,
             'rol' => $rol->roles->id
         ];
+        
+//        dd($return);
+        
         return response()->json(($return), 200);
     }
 
@@ -92,6 +122,7 @@ class userC extends Controller {
     }
 
     public function enviarMail(Request $params) {
+        
         // Hacemos una segunda validación de los campos
         $params->validate([
             'de' => 'required|string',
