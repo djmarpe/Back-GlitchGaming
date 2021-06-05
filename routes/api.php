@@ -27,10 +27,12 @@ Route::get('/ultimasNoticias', [App\Http\Controllers\newsC::class, 'getUltimasNo
 
 Route::post('/login', [App\Http\Controllers\userC::class, 'login']);
 
-// Rutas para modificar perfil
-Route::post('/editEmail', [App\Http\Controllers\userC::class, 'editEmail']);
-Route::post('/editUsername', [App\Http\Controllers\userC::class, 'editUsername']);
-Route::post('/editPassword', [App\Http\Controllers\userC::class, 'editPassword']);
-Route::post('/editDescription', [App\Http\Controllers\userC::class, 'editDescription']);
+// Rutas para modificar perfil con Passport + middleware
+Route::group(['middleware' => 'auth:api'], function() {
+    Route::post('/editEmail', [App\Http\Controllers\userC::class, 'editEmail']);
+    Route::post('/editUsername', [App\Http\Controllers\userC::class, 'editUsername']);
+    Route::post('/editPassword', [App\Http\Controllers\userC::class, 'editPassword']);
+    Route::post('/editDescription', [App\Http\Controllers\userC::class, 'editDescription']);
+});
 
-Route::post('/enviarMail', [App\Http\Controllers\userC::class , 'enviarMail']);
+Route::post('/enviarMail', [App\Http\Controllers\userC::class, 'enviarMail']);
