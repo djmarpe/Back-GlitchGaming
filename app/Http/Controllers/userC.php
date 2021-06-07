@@ -55,7 +55,7 @@ class userC extends Controller {
             'apellidos' => $user->apellidos,
             'edad' => $user->edad,
             'email' => $user->email,
-            'password' => $user->contra,
+            'password' => $user->password,
             'pais' => $user->pais,
             'nombreUsuario' => $user->nombreUsuario,
             'estado' => $user->estado,
@@ -148,6 +148,14 @@ class userC extends Controller {
                         'message' => 'Error del sistema'
                             ], 500);
         }
+    }
+    
+    public function logout(Request $params) {
+        $params->user()->token()->revoke();
+        
+        return response()->json([
+            'message' => 'Successfully logged out'
+        ],200);
     }
 
 }
