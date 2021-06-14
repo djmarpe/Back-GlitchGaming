@@ -186,7 +186,7 @@ class userC extends Controller {
         $codigo = $this->generarAlfanumerico(0, 15);
         $user->remember_token = $codigo;
 
-        $url = $_SERVER['SERVER_NAME'] . ($_SERVER['SERVER_PORT'] != 80 ? $_SERVER['SERVER_PORT'] : '') . DIRECTORY_SEPARATOR . "public" . DIRECTORY_SEPARATOR . "api" . DIRECTORY_SEPARATOR . "verify" . DIRECTORY_SEPARATOR . $codigo;
+        $url = $_SERVER['SERVER_NAME'] . ($_SERVER['SERVER_PORT'] != 80 ? $_SERVER['SERVER_PORT'] : ''). DIRECTORY_SEPARATOR . "EjerciciosPHP2020" . DIRECTORY_SEPARATOR . "Back-GlitchGaming" . DIRECTORY_SEPARATOR . "public" . DIRECTORY_SEPARATOR . "api" . DIRECTORY_SEPARATOR . "verify" . DIRECTORY_SEPARATOR . $codigo;
 
         Mail::to($user->email)->send(new Verificar($user->nombreUsuario, $url));
 
@@ -215,4 +215,15 @@ class userC extends Controller {
         return $string;
     }
 
+    public function verify($codigo) {
+        $user = User::where('remember_token',$codigo)->first();
+        if ($user != null) {
+            $user->email_verified_at = time();
+            $user->remember_token = null;
+            $user->verificado = 1;
+            $user->save();
+            return redirect(env("APP_ROUTE"));
+        }
+    }
+    
 }
