@@ -16,14 +16,15 @@ class User extends Authenticatable {
 
     protected $table = 'users';
     protected $fillable = [
-        'nombre',
-        'apellidos',
-        'edad',
+        'nombre', 
+        'apellidos', 
+        'diaNacimiento',
+        'mesNacimiento', 
+        'anioNacimiento', 
         'email',
         'password',
-        'pais',
         'nombreUsuario',
-        'estado',
+        'estado', //Estados[0 => deshabilitado, 1 => habilitado]
         'verificado',
         'descripcion',
     ];

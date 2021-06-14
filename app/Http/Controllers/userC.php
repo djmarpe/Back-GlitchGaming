@@ -3,13 +3,12 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-
 use App\Models\User;
 use App\Models\asignacionRol;
 use App\Models\rol;
-
 use Illuminate\Support\Facades\Mail;
 use App\Mail\Preguntas;
+use App\Mail\Verificar;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use App\Providers\RouteServiceProvider;
@@ -17,31 +16,31 @@ use Illuminate\Foundation\Auth\AuthenticatesUsers;
 
 class userC extends Controller {
 
-    use AuthenticatesUsers;    
-    
+    use AuthenticatesUsers;
+
     public function login(Request $params) {
-        
+
         $loginData = $params->validate([
             'nombreUsuario' => 'string|required',
             'password' => 'required'
         ]);
-        
+
 //        dd($loginData);
-        
+
         if (!auth()->attempt($loginData)) {
             return response()->json(['message' => 'Login incorrecto. Revise las credenciales.'], 400);
         }
-        
+
         $user = auth()->user();
-        
+
         if ($user->verificado != 1) {
             return response()->json(['message' => 'Correo sin verificar'], 400);
         }
-        
+
         if ($user->estado == 0) {
-             return response()->json(['message' => 'Login incorrecto. Revise las credenciales.'], 400);
+            return response()->json(['message' => 'Login incorrecto. Revise las credenciales.'], 400);
         }
-        
+
         $accessToken = auth()->user()->createToken('authToken')->accessToken;
 
         $rol = asignacionRol::with("roles", "users")
@@ -63,9 +62,9 @@ class userC extends Controller {
             'descripcion' => $user->descripcion,
             'rol' => $rol->roles->id
         ];
-        
+
 //        dd($return);
-        
+
         return response()->json(($return), 200);
     }
 
@@ -122,7 +121,7 @@ class userC extends Controller {
     }
 
     public function enviarMail(Request $params) {
-        
+
         // Hacemos una segunda validación de los campos
         $params->validate([
             'de' => 'required|string',
@@ -130,10 +129,10 @@ class userC extends Controller {
             'mensaje' => 'required|string',
             'nombre' => 'required|string',
         ]);
-        
+
         // Creamos el correo que vamos a enviar
         $correo = new Preguntas($params->all());
-        
+
         // Mandamos el correo a la dirección que queramos        
         Mail::to('gliitchgaming.esports@gmail.com')->send($correo);
 
@@ -149,13 +148,71 @@ class userC extends Controller {
                             ], 500);
         }
     }
-    
+
     public function logout(Request $params) {
         $params->user()->token()->revoke();
-        
+
         return response()->json([
-            'message' => 'Successfully logged out'
-        ],200);
+                    'message' => 'Successfully logged out'
+                        ], 200);
+    }
+
+    public function register(Request $params) {
+        $params->validate([
+            'nombre' => 'string|required',
+            'apellidos' => 'string|required',
+            'diaNacimiento' => 'required',
+            'mesNacimiento' => 'required',
+            'anioNacimiento' => 'required',
+            'email' => 'string|required',
+            'nombreUsuario' => 'string|required',
+            'password' => 'string|required'
+        ]);
+
+        $user = new User([
+            'nombre' => $params->nombre,
+            'apellidos' => $params->apellidos,
+            'diaNacimiento' => $params->diaNacimiento,
+            'mesNacimiento' => $params->mesNacimiento,
+            'anioNacimiento' => $params->anioNacimiento,
+            'email' => $params->email,
+            'nombreUsuario' => $params->nombreUsuario,
+            'password' => bcrypt($params->password),
+            'estado' => 0,
+            'verificado' => 0,
+            'descripcion' => '',
+        ]);
+
+        $codigo = $this->generarAlfanumerico(0, 15);
+        $user->remember_token = $codigo;
+
+        $url = $_SERVER['SERVER_NAME'] . ($_SERVER['SERVER_PORT'] != 80 ? $_SERVER['SERVER_PORT'] : '') . DIRECTORY_SEPARATOR . "public" . DIRECTORY_SEPARATOR . "api" . DIRECTORY_SEPARATOR . "verify" . DIRECTORY_SEPARATOR . $codigo;
+
+        Mail::to($user->email)->send(new Verificar($user->nombreUsuario, $url));
+
+        if (!Mail::failures()) {
+            $user->estado = 1;
+            $user->save();
+            asignacionRol::create([
+                'idRol' => 3,
+                'idUsuario' => $user->id
+            ]);
+            return response()->json([
+                        'message' => 'Creacion satisfactoria, verifique su email.',
+                        'code' => '201'
+                            ], 201);
+        } else {
+            return response()->json([
+                        'message' => 'Error del sistema'
+                            ], 500);
+        }
+    }
+
+    public function generarAlfanumerico($val1, $val2) {
+        $permitted_chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $string = substr(str_shuffle($permitted_chars), $val1, $val2);
+
+        return $string;
     }
 
 }
