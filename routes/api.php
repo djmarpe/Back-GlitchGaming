@@ -27,6 +27,9 @@ Route::get('/ultimasNoticias', [App\Http\Controllers\newsC::class, 'getUltimasNo
 
 Route::post('/login', [App\Http\Controllers\userC::class, 'login']);
 
+Route::post('/register', [App\Http\Controllers\userC::class, 'register']);
+Route::get('/verify/{codigo}', [App\Http\Controllers\userC::class, 'verify']);
+
 // Rutas para modificar perfil y logout con Passport + middleware
 Route::group(['middleware' => 'auth:api'], function() {
     Route::post('/editEmail', [App\Http\Controllers\userC::class, 'editEmail']);
