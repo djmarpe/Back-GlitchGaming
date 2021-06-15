@@ -222,7 +222,8 @@ class userC extends Controller {
             $user->remember_token = null;
             $user->verificado = 1;
             $user->save();
-            return redirect(env("APP_ROUTE"));
+            $url = "http://localhost:4200/login";
+            return redirect($url);
         }
     }
     
