@@ -55,7 +55,6 @@ class userC extends Controller {
             'edad' => $user->edad,
             'email' => $user->email,
             'password' => $user->password,
-            'pais' => $user->pais,
             'nombreUsuario' => $user->nombreUsuario,
             'estado' => $user->estado,
             'verificado' => $user->verificado,

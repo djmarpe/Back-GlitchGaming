@@ -44,6 +44,7 @@ Route::group(['middleware' => 'auth:api'], function() {
    Route::get('/superAdmin/getUsers', [App\Http\Controllers\adminC::class, 'getUsers']);
    Route::post('/superAdmin/deleteUser', [App\Http\Controllers\adminC::class, 'deleteUser']);
    Route::post('/superAdmin/newUser', [App\Http\Controllers\adminC::class, 'newUser']);
+   Route::post('/superAdmin/editUser', [App\Http\Controllers\adminC::class, 'editUser']);
 //});
 
 Route::post('/enviarMail', [App\Http\Controllers\userC::class, 'enviarMail']);
