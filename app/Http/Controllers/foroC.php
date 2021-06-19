@@ -24,7 +24,7 @@ class foroC extends Controller {
 
         //Array a devolver
         $todasPreguntas;
-        
+
         $return = [];
 
         //Recorremos el array con las preguntas y sus respuestas
@@ -34,37 +34,52 @@ class foroC extends Controller {
             $preguntaAux2 = [
                 "id" => $pregunta->id,
                 "usuarioCreador" => User::where("id", $pregunta->idUsuarioCreador)->first(),
-                "pregunta" => $pregunta->descripcion,  
+                "pregunta" => $pregunta->descripcion,
             ];
-            
+
             //Creamos el array 
             $respuestasAux = [];
-            
+
             foreach ($pregunta->respuestas as $k => $respuesta) {
                 //Recogemos cada una de las respuestas
                 $respuestaAux = [
-                    "id"=>$respuesta->id,
-                    "idPregunta"=>$respuesta->idPregunta,
-                    "usuarioResponde"=>User::where("id", $respuesta->idUsuarioResponde)->first(),
-                    "descripcion"=>$respuesta->descripcion
+                    "id" => $respuesta->id,
+                    "idPregunta" => $respuesta->idPregunta,
+                    "usuarioResponde" => User::where("id", $respuesta->idUsuarioResponde)->first(),
+                    "descripcion" => $respuesta->descripcion
                 ];
                 //Añadimos las respuestas en el array de respuestas
                 $respuestasAux[] = $respuestaAux;
             }
             //Montamos el array que vamos a devolver con pregunta mas conj de respuestas
             $preguntaAux3 = [
-                "pregunta"=>$preguntaAux2,
+                "pregunta" => $preguntaAux2,
                 "respuestas" => $respuestasAux
             ];
             //Añadimos la pregunta al array general a devolver
             $return[] = $preguntaAux3;
         }
-        
+
         $todasPreguntas = [
             "listaPreguntas" => $return
         ];
 
         return $todasPreguntas;
+    }
+
+    public function setRespuesta(Request $params) {
+        $respuesta = new respuesta([
+            'idUsuarioResponde' => $params->idUsuarioRespuesta,
+            'idPregunta' => $params->idPregunta,
+            'descripcion' => $params->respuesta
+        ]);
+
+        $respuesta->save();
+
+        return response()->json([
+                    'message' => 'Respuesta creada',
+                    'code' => '201'
+                        ], 201);
     }
 
 }

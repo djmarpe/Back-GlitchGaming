@@ -14,7 +14,7 @@ class respuesta extends Model
     protected $fillable = [
         'id',
         'idPregunta',
-        'idUsuario',
+        'idUsuarioResponde',
         'descripcion',
     ];
     protected $hidden = [
