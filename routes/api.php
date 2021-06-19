@@ -6,6 +6,7 @@ use App\Http\Controllers\torneosC;
 use App\Http\Controllers\newsC;
 use App\Http\Controllers\userC;
 use App\Http\Controllers\adminC;
+use App\Http\Controllers\foroC;
 
 /*
   |--------------------------------------------------------------------------
@@ -41,10 +42,16 @@ Route::group(['middleware' => 'auth:api'], function() {
 });
 
 Route::group(['middleware' => 'auth:api'], function() {
-   Route::get('/superAdmin/getUsers', [App\Http\Controllers\adminC::class, 'getUsers']);
-   Route::post('/superAdmin/deleteUser', [App\Http\Controllers\adminC::class, 'deleteUser']);
-   Route::post('/superAdmin/newUser', [App\Http\Controllers\adminC::class, 'newUser']);
-   Route::post('/superAdmin/editUser', [App\Http\Controllers\adminC::class, 'editUser']);
+    Route::get('/superAdmin/getUsers', [App\Http\Controllers\adminC::class, 'getUsers']);
+    Route::post('/superAdmin/deleteUser', [App\Http\Controllers\adminC::class, 'deleteUser']);
+    Route::post('/superAdmin/newUser', [App\Http\Controllers\adminC::class, 'newUser']);
+    Route::post('/superAdmin/editUser', [App\Http\Controllers\adminC::class, 'editUser']);
 });
 
 Route::post('/enviarMail', [App\Http\Controllers\userC::class, 'enviarMail']);
+
+//Foro
+Route::get('/foro/getPreguntas', [App\Http\Controllers\foroC::class, 'getPreguntas']);
+Route::group(['middleware' => 'auth:api'], function() {
+    Route::post('/foro/setRespuesta', [App\Http\Controllers\foroC::class, 'setRespuesta']);
+});
