@@ -6,6 +6,7 @@ use App\Http\Controllers\torneosC;
 use App\Http\Controllers\newsC;
 use App\Http\Controllers\userC;
 use App\Http\Controllers\adminC;
+use App\Http\Controllers\foroC;
 
 /*
   |--------------------------------------------------------------------------
@@ -48,3 +49,5 @@ Route::group(['middleware' => 'auth:api'], function() {
 });
 
 Route::post('/enviarMail', [App\Http\Controllers\userC::class, 'enviarMail']);
+
+Route::get('/foro/getPreguntas', [App\Http\Controllers\foroC::class, 'getPreguntas']);
