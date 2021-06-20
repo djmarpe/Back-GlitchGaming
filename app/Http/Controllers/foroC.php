@@ -15,6 +15,7 @@ use App\Providers\RouteServiceProvider;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\DB;
 
 class foroC extends Controller {
 
@@ -80,6 +81,15 @@ class foroC extends Controller {
                     'message' => 'Respuesta creada',
                     'code' => '201'
                         ], 201);
+    }
+
+    public function deleteRespuesta(Request $params) {
+        if (respuesta::where("id", $params->id)->delete()) {
+            return response()->json([
+                        'message' => 'Respuesta eliminada',
+                        'code' => '201'
+                            ], 201);
+        }
     }
 
 }
