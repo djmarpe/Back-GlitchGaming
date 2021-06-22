@@ -13,7 +13,7 @@ class pregunta extends Model
     
     protected $fillable = [
         'id',
-        'idCreador',
+        'idUsuarioCreador',
         'descripcion',
     ];
     

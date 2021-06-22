@@ -52,8 +52,7 @@ Route::post('/enviarMail', [App\Http\Controllers\userC::class, 'enviarMail']);
 
 //Foro
 Route::get('/foro/getPreguntas', [App\Http\Controllers\foroC::class, 'getPreguntas']);
-//Route::group(['middleware' => 'auth:api'], function() {
-    Route::post('/foro/setRespuesta', [App\Http\Controllers\foroC::class, 'setRespuesta']);
-    Route::post('/foro/deleteRespuesta', [App\Http\Controllers\foroC::class, 'deleteRespuesta']);
-//});
+Route::post('/foro/setRespuesta', [App\Http\Controllers\foroC::class, 'setRespuesta']);
+Route::post('/foro/deleteRespuesta', [App\Http\Controllers\foroC::class, 'deleteRespuesta']);
+Route::post('/foro/addPregunta', [App\Http\Controllers\foroC::class, 'addPregunta']);
 
