@@ -92,4 +92,21 @@ class foroC extends Controller {
         }
     }
 
+    public function addPregunta(Request $params) {
+        $pregunta = new pregunta([
+            'idUsuarioCreador' => $params->idCreador,
+            'descripcion' => $params->descripcion
+        ]);
+        if ($pregunta->save()) {
+            $response = response()->json([
+                'message' => 'Creacion satisfactoria',
+                'code' => '201'
+                    ], 200);
+        } else {
+            $response = response()->json([
+                'message' => 'Error del servidor',
+                'code' => '500'
+                    ], 500);
+        }
+    }
 }
