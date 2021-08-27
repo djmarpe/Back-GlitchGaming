@@ -14,6 +14,7 @@ class CreateAsignacionRolsTable extends Migration
     public function up()
     {
         Schema::create('asignacionRol', function (Blueprint $table) {
+            $table->integer('id');
             $table->integer('idRol');
             $table->integer('idUsuario');
             $table->timestamps();
