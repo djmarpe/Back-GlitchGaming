@@ -19,26 +19,28 @@ class UserSeeder extends Seeder
         User::create([
             'nombre' => 'Alejandro',
             'apellidos' => 'Martín Pérez',
-            'edad' => 21,
+            'diaNacimiento' => 18,
+            'mesNacimiento' => 12,
+            'anioNacimiento' => 1999,
             'email' => 'alejandro.martin.perez.99@gmail.com',
             'password' => 'Admin.1234',
-            'pais' => 'España',
-            'nombreUsuario' => 'djmarpe',
+            'nombreUsuario' => 'superadmin',
             'estado' => 1,
             'verificado' => 1,
             'descripcion' => 'Soy el Super administrador',
         ],);
         User::create([
-            'nombre' => 'Glitch',
-            'apellidos' => 'Gaming',
-            'edad' => 10,
-            'email' => 'info@glitchgaming.es',
+            'nombre' => 'Bot',
+            'apellidos' => 'Glitch',
+            'diaNacimiento' => 3,
+            'mesNacimiento' => 11,
+            'anioNacimiento' => 2020,
+            'email' => 'gliitchgaming.esports@gmail.com',
             'password' => 'Admin.1234',
-            'pais' => 'España',
-            'nombreUsuario' => 'gg',
+            'nombreUsuario' => 'botglitch',
             'estado' => 1,
             'verificado' => 1,
-            'descripcion' => 'Soy el bot de pruebas',
+            'descripcion' => 'Soy el Bot de pruebas',
         ],);
     }
 }
