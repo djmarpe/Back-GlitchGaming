@@ -221,7 +221,7 @@ class userC extends Controller {
             $user->remember_token = null;
             $user->verificado = 1;
             $user->save();
-            $url = "http://pruebas.glitchgaming.es/login";
+            $url = "https://pruebas.glitchgaming.es/login";
             return redirect($url);
         }
     }
