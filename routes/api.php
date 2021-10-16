@@ -56,3 +56,7 @@ Route::post('/foro/setRespuesta', [App\Http\Controllers\foroC::class, 'setRespue
 Route::post('/foro/deleteRespuesta', [App\Http\Controllers\foroC::class, 'deleteRespuesta']);
 Route::post('/foro/addPregunta', [App\Http\Controllers\foroC::class, 'addPregunta']);
 
+
+//Prueba
+Route::get('/juegos/valorant', [App\Http\Controllers\torneosC::class, 'valorant']);
+Route::get('/juegos/lol', [App\Http\Controllers\torneosC::class, 'lol']);
