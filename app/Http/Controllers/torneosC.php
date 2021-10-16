@@ -15,8 +15,7 @@ class torneosC extends Controller {
                     'ultimosTorneos' => ($torneos)
                         ], 200);
     }
-    
-    
+
     //Player Stats
     public function valorant(Request $player) {
         $client = new Client();
@@ -26,18 +25,14 @@ class torneosC extends Controller {
         $jugador = str_replace($quitarTexto, $sustitucion, $player->player);
 
         $crawler = $client->request('GET', 'https://tracker.gg/valorant/profile/riot/' . $jugador . '/overview?playlist=competitive');
-
-        $crawler->filter('span.valorant-highlighted-stat__value')->each(function ($node) {
-            print $node->text() . "\n";
-        });
+        print $crawler->filter('span.valorant-highlighted-stat__value')->getNode(1)->textContent;
     }
 
-    
     //Función en pruebas, get league of legends player stats
     public function lol(Request $player) {
         $client = new Client();
 
-        $crawler = $client->request('GET','https://www.leagueofgraphs.com/es/');
+        $crawler = $client->request('GET', 'https://www.leagueofgraphs.com/es/');
 
         dd($crawler);
         $form = $crawler->selectButton('Buscar')->form();
