@@ -17,10 +17,11 @@ class CreateUsersTable extends Migration
             $table->increments('id');
             $table->string('nombre', 255);
             $table->string('apellidos', 255);
-            $table->tinyInteger('edad');
+            $table->integer('diaNacimiento');
+            $table->integer('mesNacimiento');
+            $table->integer('anioNacimiento');
             $table->string('email', 255)->unique();
             $table->string('password', 255);
-            $table->string('pais', 255);
             $table->string('nombreUsuario', 255)->unique();
             $table->tinyInteger('estado');
             $table->tinyInteger('verificado');

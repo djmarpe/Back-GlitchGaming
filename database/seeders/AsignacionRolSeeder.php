@@ -16,10 +16,12 @@ class AsignacionRolSeeder extends Seeder {
         asignacionRol::truncate();
 
         asignacionRol::create([
+            'id' => 1,
             'idRol' => 1,
             'idUsuario' => 1,
                 ],);
         asignacionRol::create([
+            'id' => 2,
             'idRol' => 1,
             'idUsuario' => 2,
                 ],);
