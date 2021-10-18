@@ -20,18 +20,18 @@ class torneosC extends Controller {
     public function valorant(Request $player) {
         $client = new Client();
 
-//        $quitarTexto = array(' ', '#');
-//        $sustitucion = array('%20', '%23');
-//        $jugador = str_replace($quitarTexto, $sustitucion, $player->player);
+        $quitarTexto = array(' ', '#');
+        $sustitucion = array('%20', '%23');
+        $jugador = str_replace($quitarTexto, $sustitucion, $player->player);
 
-//        $crawler = $client->request('GET', 'https://tracker.gg/valorant/profile/riot/' . $jugador . '/overview?playlist=competitive');
-//        $rank = $crawler->filter('span.valorant-highlighted-stat__value')->getNode(0)->textContent;
-//        $kda = $crawler->filter('span.valorant-highlighted-stat__value')->getNode(1)->textContent;
+        $crawler = $client->request('GET', 'https://tracker.gg/valorant/profile/riot/' . $jugador . '/overview?playlist=competitive');
+        $rank = $crawler->filter('span.valorant-highlighted-stat__value')->getNode(0)->textContent;
+        $kda = $crawler->filter('span.valorant-highlighted-stat__value')->getNode(1)->textContent;
 
         return response()->json([
-                    'player' => $player->player,
-//                    'rank' => $rank,
-//                    'kda' => $kda
+                    'player' => $jugador,
+                    'rank' => $rank,
+                    'kda' => $kda
                         ], 200);
     }
 
