@@ -24,17 +24,15 @@ class torneosC extends Controller {
         $sustitucion = array('%20', '%23');
         $jugador = str_replace($quitarTexto, $sustitucion, $player->player);
 
-        return response()->json([
-            'player' => ($player)
-                        ], 200);
         $crawler = $client->request('GET', 'https://tracker.gg/valorant/profile/riot/' . $jugador . '/overview?playlist=competitive');
         $rank = $crawler->filter('span.valorant-highlighted-stat__value')->getNode(0)->textContent;
         $kda = $crawler->filter('span.valorant-highlighted-stat__value')->getNode(1)->textContent;
 
-//        return response()->json([
-//                    'rank' => ($rank),
-//                    'kda' => ($kda)
-//                        ], 200);
+        return response()->json([
+                    'player' => $jugador,
+                    'rank' => $rank,
+                    'kda' => $kda
+                        ], 200);
     }
 
     //Función en pruebas, get league of legends player stats
