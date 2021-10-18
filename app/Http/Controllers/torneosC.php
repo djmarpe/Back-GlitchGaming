@@ -25,7 +25,7 @@ class torneosC extends Controller {
         $jugador = str_replace($quitarTexto, $sustitucion, $player->player);
 
         return response()->json([
-            'player' => ($jugador)
+            'player' => ($player)
                         ], 200);
         $crawler = $client->request('GET', 'https://tracker.gg/valorant/profile/riot/' . $jugador . '/overview?playlist=competitive');
         $rank = $crawler->filter('span.valorant-highlighted-stat__value')->getNode(0)->textContent;
