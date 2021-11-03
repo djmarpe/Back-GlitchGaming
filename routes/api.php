@@ -58,5 +58,5 @@ Route::post('/foro/addPregunta', [App\Http\Controllers\foroC::class, 'addPregunt
 
 
 //Prueba
-Route::get('/juegos/valorant', [App\Http\Controllers\torneosC::class, 'valorant']);
+Route::post('/juegos/valorant', [App\Http\Controllers\torneosC::class, 'valorant']);
 Route::get('/juegos/lol', [App\Http\Controllers\torneosC::class, 'lol']);
