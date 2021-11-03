@@ -39,7 +39,9 @@ class torneosC extends Controller {
             for ($j = 1; $j < sizeof($matches[$i]); $j++) {
                 
                 // Los nombres de los rango nunca comienzan por numero por lo que
-                // compruebo si comienza por numero, si es asi filtro por otro patron
+                // compruebo si comienza por numero, ya que la página desde 
+                // donde obtengo los datos si pasas de X rango cambia la forma de 
+                // representacion de los datos y hay que hacer un segundo filtrado
                 if (is_numeric($matches[$i][$j][0])) {
                     $re = '/<div class="label" data-v-b39ab534>(.*?)<\/div>/m';
                     preg_match_all($re, $page, $matches, PREG_SET_ORDER, 0);
