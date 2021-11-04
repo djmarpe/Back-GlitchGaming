@@ -91,4 +91,64 @@ class equiposC extends Controller {
         }
     }
 
+    public function exitTeam(Request $request) {
+        //Elimino al jugador de la tabla miembro_equipo
+        if (miembroEquipo::where('idJugador', '=', $request->idJugador)
+                        ->where('idEquipo', '=', $request->idEquipo)
+                        ->delete()) {
+            //Compruebo que no sea el último miembro del equipo
+            if (sizeof(miembroEquipo::with("miembro")
+                                    ->where('idEquipo', $request->idEquipo)
+                                    ->get()) > 1) {
+                //Si hay mas de un miembro, miro si es el creador
+                if (equipo::where('idCreador', '=', $request->idJugador)) {
+                    //Si es el creador, le pasamos el admin a otro jugador aleatorio
+                    //del equipo
+                    if ($this->setNewAdmin($request->idEquipo, $request->idJugador)) {
+                        return response()->json(['nuevoAdmin' => 'ok'], 200);
+                    } else {
+                        return response()->json(['nuevoAdmin' => 'error'], 500);
+                    }
+                    return response()->json(['salida' => 'ok'], 200);
+                } else {
+                    return response()->json(['salida' => 'error'], 500);
+                }
+            } else {
+                //Si es el ultimo jugador, borramos el equipo directamente
+                if(equipo::where('id','=',$request->idEquipo)->delete()){
+                    return response()->json(['salida' => 'ok'], 200);
+                }
+            }
+        }
+    }
+
+    public function setNewAdmin($idEquipo, $idJugador) {
+        //Obtenemos los nombres de los jugadores que pertenecen a un equipo concreto
+        $miembros = miembroEquipo::with("miembro")
+                ->where('idEquipo', '=', $idEquipo)
+                ->get();
+        $alea = rand(0, sizeof($miembros) - 1);
+
+        $miembroSeleccionado = $miembros[$alea];
+
+        //Seteamos el nuevo admin del equipo
+        if (equipo::where('id', '=', $idEquipo)
+                        ->where('idCreador', '=', $idJugador)
+                        ->update(['idCreador' => $miembroSeleccionado->miembro->id])) {
+            return true;
+        } else {
+            return false;
+        }
+
+//        foreach ($miembros as $i => $miembro) {
+//            $miembro = [
+//                "id" => $miembro->miembro->id,
+//                "nombreUsuario" => $miembro->miembro->nombreUsuario
+//            ];
+//            $return = $return + [
+//                $i => $miembro
+//            ];
+//        }
+    }
+
 }
