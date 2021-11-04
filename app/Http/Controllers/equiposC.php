@@ -34,6 +34,7 @@ class equiposC extends Controller {
             //Monto el array del equipo
             $teams = [
                 "idEquipo" => json_decode($equipo->equipos[0]->id),
+                "idCreador" => $equipo->equipos[0]->idCreador,
                 "nombre" => $equipo->equipos[0]->nombre,
                 "juego" => $juego->juego,
                 "miembros" => $cuantos
@@ -46,6 +47,48 @@ class equiposC extends Controller {
         }
 
         return response()->json(["equipos" => $return], 200);
+    }
+
+    public function getMembers(Request $request) {
+        //Obtenemos los nombres de los jugadores que pertenecen a un equipo concreto
+        $miembros = miembroEquipo::with("miembro")
+                ->where('idEquipo', $request->idEquipo)
+                ->get();
+
+        $return = [];
+        $miembro = [];
+
+        foreach ($miembros as $i => $miembro) {
+            $miembro = [
+                "id" => $miembro->miembro->id,
+                "nombreUsuario" => $miembro->miembro->nombreUsuario
+            ];
+            $return = $return + [
+                $i => $miembro
+            ];
+        }
+        return response()->json(["miembros" => $return], 200);
+    }
+
+    public function deleteMembers(Request $request) {
+        if (miembroEquipo::where('idEquipo', '=', $request->idEquipo)
+                        ->where('idJugador', '=', $request->idJugador)
+                        ->delete()) {
+
+            return response()->json(['borrado' => 'ok'], 200);
+        } else {
+            return response()->json(['borrado' => 'error'], 500);
+        }
+    }
+
+    public function deleteTeam(Request $request) {
+        if (miembroEquipo::where('idEquipo', '=', $request->idEquipo)->delete()) {
+            if (equipo::where('id', '=', $request->idEquipo)->delete()) {
+                return response()->json(['borrado' => 'ok'], 200);
+            }
+        } else {
+            return response()->json(['borrado' => 'error'], 500);
+        }
     }
 
 }

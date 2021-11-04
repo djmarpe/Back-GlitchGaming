@@ -23,7 +23,7 @@ class miembroEquipo extends Model
         return $this->hasMany('App\Models\equipo','id','idEquipo');
     }
 
-//    public function miembros(){
-//        return $this->hasOne('App\Models\User', 'id','idJugador');
-//    }
+    public function miembro(){
+        return $this->hasOne('App\Models\User', 'id','idJugador');
+    }
 }
