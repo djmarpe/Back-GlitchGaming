@@ -5,20 +5,21 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class respuesta extends Model
-{
+class equipo extends Model {
+
     use HasFactory;
-    
-    protected $table = 'respuesta';
-    
+
+    protected $table = 'equipo';
     protected $fillable = [
         'id',
-        'idPregunta',
-        'idUsuarioResponde',
-        'descripcion',
+        'nombre',
+        'idCreador',
+        'idJuego',
+        'code'
     ];
     protected $hidden = [
         'created_at',
-        'updated_at',
+        'updated_at'
     ];
+
 }

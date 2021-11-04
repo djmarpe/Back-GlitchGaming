@@ -7,6 +7,7 @@ use App\Http\Controllers\newsC;
 use App\Http\Controllers\userC;
 use App\Http\Controllers\adminC;
 use App\Http\Controllers\foroC;
+use App\Http\Controllers\equiposC;
 
 /*
   |--------------------------------------------------------------------------
@@ -60,3 +61,6 @@ Route::post('/foro/addPregunta', [App\Http\Controllers\foroC::class, 'addPregunt
 //Prueba
 Route::post('/juegos/valorant', [App\Http\Controllers\torneosC::class, 'valorant']);
 Route::get('/juegos/lol', [App\Http\Controllers\torneosC::class, 'lol']);
+
+//Equipos
+Route::post('/getEquipos', [App\Http\Controllers\equiposC::class, 'getEquipos']);
