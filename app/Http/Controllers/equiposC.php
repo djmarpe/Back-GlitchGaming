@@ -115,7 +115,7 @@ class equiposC extends Controller {
                 }
             } else {
                 //Si es el ultimo jugador, borramos el equipo directamente
-                if(equipo::where('id','=',$request->idEquipo)->delete()){
+                if (equipo::where('id', '=', $request->idEquipo)->delete()) {
                     return response()->json(['salida' => 'ok'], 200);
                 }
             }
@@ -139,16 +139,42 @@ class equiposC extends Controller {
         } else {
             return false;
         }
-
-//        foreach ($miembros as $i => $miembro) {
-//            $miembro = [
-//                "id" => $miembro->miembro->id,
-//                "nombreUsuario" => $miembro->miembro->nombreUsuario
-//            ];
-//            $return = $return + [
-//                $i => $miembro
-//            ];
-//        }
     }
 
+    public function getCode(Request $request) {
+        $equipos = equipo::all();
+
+        if (sizeof($equipos) > 0) {
+            $i = 0;
+            while ($i < sizeof($equipos)) {
+                $colocado = false;
+                while (!$colocado) {
+                    $alea = rand(100000, 999999);
+                    $repetido = false;
+                    foreach ($equipos as $k => $equipo) {
+                        if ($equipo->code == $alea) {
+                            $repetido = true;
+                        }
+                    }
+
+                    if (!$colocado && !$repetido) {
+                        equipo::where('id', '=', $request->idEquipo)->update(['code' => $alea]);
+                        $colocado = true;
+                        $i++;
+                        return response()->json(['accessCode' => $alea], 200);
+                    }
+                }
+            }
+        }
+    }
+
+    public function deleteCode(Request $request) {
+        if (equipo::where('id','=', $request->idEquipo)
+                        ->update(['code' => null])) {
+            return response()->json(['exito'=>true],200);
+        }else{
+            return response()->json(['exito'=>false],500);
+        }
+    }
+    
 }

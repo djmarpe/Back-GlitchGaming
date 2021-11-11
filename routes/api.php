@@ -45,6 +45,9 @@ Route::group(['middleware' => 'auth:api'], function() {
     Route::post('/getMembers', [App\Http\Controllers\equiposC::class, 'getMembers']);
     Route::post('/deleteMember', [App\Http\Controllers\equiposC::class, 'deleteMembers']);
     Route::post('/deleteTeam', [App\Http\Controllers\equiposC::class, 'deleteTeam']);
+    Route::post('/exitTeam', [App\Http\Controllers\equiposC::class, 'exitTeam']);
+    Route::post('/getCode', [App\Http\Controllers\equiposC::class, 'getCode']);
+    Route::post('/deleteCode', [App\Http\Controllers\equiposC::class, 'deleteCode']);
     
 });
 
@@ -68,4 +71,3 @@ Route::post('/foro/addPregunta', [App\Http\Controllers\foroC::class, 'addPregunt
 Route::post('/juegos/valorant', [App\Http\Controllers\torneosC::class, 'valorant']);
 Route::get('/juegos/lol', [App\Http\Controllers\torneosC::class, 'lol']);
 
-Route::post('/exitTeam', [App\Http\Controllers\equiposC::class, 'exitTeam']);
