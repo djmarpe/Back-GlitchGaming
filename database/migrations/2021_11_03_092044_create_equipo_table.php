@@ -19,6 +19,7 @@ class CreateEquipoTable extends Migration
             $table->string('idCreador');
             $table->string('idJuego');
             $table->string('code');
+            $table->bigInteger('max_players');
             $table->timestamps();
         });
     }

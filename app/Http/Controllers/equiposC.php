@@ -169,12 +169,111 @@ class equiposC extends Controller {
     }
 
     public function deleteCode(Request $request) {
-        if (equipo::where('id','=', $request->idEquipo)
+        if (equipo::where('id', '=', $request->idEquipo)
                         ->update(['code' => null])) {
-            return response()->json(['exito'=>true],200);
-        }else{
-            return response()->json(['exito'=>false],500);
+            return response()->json(['exito' => true], 200);
+        } else {
+            return response()->json(['exito' => false], 500);
         }
     }
-    
+
+    public function unirseEquipo(Request $request) {
+        $idJugador = $request->idJugador;
+        $codigo = $request->codigo;
+        $equipo = equipo::where('code', '=', $codigo)->first();
+
+        //comprobamos si hay algun equipo con ese codigo de acceso
+        if ($equipo != null) {
+            $idEquipo = $equipo->id;
+            //Obtenemos los miembros del equipo
+            $miembros = miembroEquipo::where('idEquipo', '=', $idEquipo)->get();
+            //Comprobamos si hay miembros y los miembros son menores que el maximo de jugadores
+            if (sizeof($miembros) > 0 && sizeof($miembros) < $equipo->max_players) {
+                $existe = false;
+                //Miramos todos los miembros de ese equipo
+                foreach ($miembros as $i => $miembro) {
+                    //Si hay algun miembro que tiene el mismo id
+                    if ($miembro->idJugador == $idJugador) {
+                        $existe = true;
+                        //Devolvemos error
+                        return response()->json(['unirse' => false], 403);
+                    }
+                }
+                //Si no existe ese jugador
+                if (!$existe) {
+                    //Obtenemos el total de miembros
+                    $total = miembroEquipo::get();
+                    //Creamos el registro
+                    $newMember = new miembroEquipo([
+                        'id' => sizeof($total) + 1,
+                        'idEquipo' => $idEquipo,
+                        'idJugador' => $idJugador,
+                    ]);
+                    //Salvamos en la BBDD
+                    $newMember->save();
+                    //Devolvemos el ok
+                    return response()->json(['unirse' => true], 200);
+                }
+            }
+        }
+    }
+
+    public function getJuegosDisponibles() {
+        $juegos = juego::get();
+        return response()->json(['juegos' => $juegos]);
+    }
+
+    public function createTeam(Request $request) {
+        $idCreador = $request->idCreador;
+        $idJuego = $request->idJuego;
+        $maxPlayers = $request->maxPlayers;
+        $nombre = $request->newNombre;
+
+        //Obtenemos los equipos que haya creado ese jugador con esa Id de juego
+        $equipos = equipo::where('idCreador', '=', $idCreador)
+                        ->where('idJuego', '=', $idJuego)->get();
+
+        //Si hay algun equipo
+        if (sizeof($equipos) > 0) {
+            //Devolvemos error
+            return response()->json(['existe' => false], 403);
+            //Si no tiene equipos en los cuales sea creador con esa ID de juego
+        } else {
+            //Obtenemos el total de equipo
+            $totalEquipos = equipo::get();
+
+            //Creamos el nuevo equipo
+            $newTeam = new equipo([
+                'id' => sizeof($totalEquipos) + 1,
+                'nombre' => $nombre,
+                'idCreador' => $idCreador,
+                'idJuego' => $idJuego,
+                'code' => null,
+                'max_players' => $maxPlayers
+            ]);
+
+            //Si lo guarda bien
+            if ($newTeam->save()) {
+
+                //Obtenemos el total de miembros
+                $total = miembroEquipo::get();
+                //Creamos el miembro nuevo
+                $miembroNuevo = new miembroEquipo([
+                    'id' => sizeof($total) + 1,
+                    'idEquipo' => sizeof($totalEquipos) + 1,
+                    'idJugador' => $idCreador
+                ]);
+                //Si lo guarda bien
+                if ($miembroNuevo->save()) {
+                    //Devolvemos true 
+                    return response()->json(['creado' => true], 200);
+                } else {
+                    return response()->json(['creado' => false], 500);
+                }
+            } else {
+                return response()->json(['creado' => false], 500);
+            }
+        }
+    }
+
 }

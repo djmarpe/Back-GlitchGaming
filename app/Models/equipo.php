@@ -15,7 +15,8 @@ class equipo extends Model {
         'nombre',
         'idCreador',
         'idJuego',
-        'code'
+        'code',
+        'max_players'
     ];
     protected $hidden = [
         'created_at',
