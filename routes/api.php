@@ -7,6 +7,7 @@ use App\Http\Controllers\newsC;
 use App\Http\Controllers\userC;
 use App\Http\Controllers\adminC;
 use App\Http\Controllers\foroC;
+use App\Http\Controllers\equiposC;
 
 /*
   |--------------------------------------------------------------------------
@@ -39,6 +40,16 @@ Route::group(['middleware' => 'auth:api'], function() {
     Route::post('/editPassword', [App\Http\Controllers\userC::class, 'editPassword']);
     Route::post('/editDescription', [App\Http\Controllers\userC::class, 'editDescription']);
     Route::post('/logout', [App\Http\Controllers\userC::class, 'logout']);
+    //Equipos
+    Route::post('/getEquipos', [App\Http\Controllers\equiposC::class, 'getEquipos']);
+    Route::post('/getMembers', [App\Http\Controllers\equiposC::class, 'getMembers']);
+    Route::post('/deleteMember', [App\Http\Controllers\equiposC::class, 'deleteMembers']);
+    Route::post('/deleteTeam', [App\Http\Controllers\equiposC::class, 'deleteTeam']);
+    Route::post('/exitTeam', [App\Http\Controllers\equiposC::class, 'exitTeam']);
+    Route::post('/getCode', [App\Http\Controllers\equiposC::class, 'getCode']);
+    Route::post('/deleteCode', [App\Http\Controllers\equiposC::class, 'deleteCode']);
+    Route::post('/unirseEquipo', [App\Http\Controllers\equiposC::class, 'unirseEquipo']);
+    
 });
 
 Route::group(['middleware' => 'auth:api'], function() {
@@ -60,3 +71,6 @@ Route::post('/foro/addPregunta', [App\Http\Controllers\foroC::class, 'addPregunt
 //Prueba
 Route::post('/juegos/valorant', [App\Http\Controllers\torneosC::class, 'valorant']);
 Route::get('/juegos/lol', [App\Http\Controllers\torneosC::class, 'lol']);
+
+Route::post('/getJuegosDisponibles', [App\Http\Controllers\equiposC::class, 'getJuegosDisponibles']);
+Route::post('/createTeam', [App\Http\Controllers\equiposC::class, 'createTeam']);
