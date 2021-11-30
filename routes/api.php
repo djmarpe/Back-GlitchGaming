@@ -8,6 +8,7 @@ use App\Http\Controllers\userC;
 use App\Http\Controllers\adminC;
 use App\Http\Controllers\foroC;
 use App\Http\Controllers\equiposC;
+use App\Http\Controllers\juegoC;
 
 /*
   |--------------------------------------------------------------------------
@@ -49,7 +50,6 @@ Route::group(['middleware' => 'auth:api'], function() {
     Route::post('/getCode', [App\Http\Controllers\equiposC::class, 'getCode']);
     Route::post('/deleteCode', [App\Http\Controllers\equiposC::class, 'deleteCode']);
     Route::post('/unirseEquipo', [App\Http\Controllers\equiposC::class, 'unirseEquipo']);
-    
 });
 
 Route::group(['middleware' => 'auth:api'], function() {
@@ -68,9 +68,31 @@ Route::post('/foro/deleteRespuesta', [App\Http\Controllers\foroC::class, 'delete
 Route::post('/foro/addPregunta', [App\Http\Controllers\foroC::class, 'addPregunta']);
 
 
-//Prueba
+//Stats
 Route::post('/juegos/valorant', [App\Http\Controllers\torneosC::class, 'valorant']);
 Route::get('/juegos/lol', [App\Http\Controllers\torneosC::class, 'lol']);
 
 Route::post('/getJuegosDisponibles', [App\Http\Controllers\equiposC::class, 'getJuegosDisponibles']);
 Route::post('/createTeam', [App\Http\Controllers\equiposC::class, 'createTeam']);
+
+
+Route::get('/', [App\Http\Controllers\FileController::class, 'index']);
+Route::post('/files', [App\Http\Controllers\FileController::class, 'store']);
+Route::delete('/files/{file}', [App\Http\Controllers\FileController::class, 'destroy']);
+Route::get('/files/{file}/download', [App\Http\Controllers\FileController::class, 'download']);
+
+//Consulta de juegos
+Route::get('/juegos/juegosDisponibles', [App\Http\Controllers\juegoC::class, 'getJuegosDisponibles']);
+
+Route::post('/juego/getTorneosProgramados', [App\Http\Controllers\torneosC::class, 'getTorneosProgramados']);
+Route::post('/juego/getTorneosFinalizados', [App\Http\Controllers\torneosC::class, 'getTorneosFinalizados']);
+Route::post('/juego/getTorneosEnCurso', [App\Http\Controllers\torneosC::class, 'getTorneosEnCurso']);
+Route::post('/juego/getNombreJuego', [App\Http\Controllers\juegoC::class, 'getNombreJuego']);
+Route::post('/juego/getTorneo', [App\Http\Controllers\torneosC::class, 'getTorneo']);
+
+Route::post('/getFullTeam', [App\Http\Controllers\equiposC::class, 'getFullTeam']);
+Route::post('/torneo/inscribirEquipo', [App\Http\Controllers\torneosC::class, 'inscribirEquipo']);
+Route::post('/juego/getTipoModalidad', [App\Http\Controllers\juegoC::class, 'getTipoModalidad']);
+Route::post('/juego/getModalidad', [App\Http\Controllers\juegoC::class, 'getModalidad']);
+Route::post('/torneo/crearTorneo', [App\Http\Controllers\torneosC::class, 'crearTorneo']);
+Route::post('/torneo/getReglas', [App\Http\Controllers\torneosC::class, 'getReglas']);

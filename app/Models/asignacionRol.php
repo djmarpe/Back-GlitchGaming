@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class asignacionRol extends Model
 {
     use HasFactory;
-    protected $table = 'asignacionRol';
+    protected $table = 'asignacion_rol';
     
     protected $fillable = [
         'idRol',

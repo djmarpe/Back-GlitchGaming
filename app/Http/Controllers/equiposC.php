@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\equipo;
 use App\Models\miembroEquipo;
 use App\Models\juego;
+use App\Models\torneo_equipo;
 
 class equiposC extends Controller {
 
@@ -254,12 +255,9 @@ class equiposC extends Controller {
 
             //Si lo guarda bien
             if ($newTeam->save()) {
-
-                //Obtenemos el total de miembros
-                $total = miembroEquipo::get();
                 //Creamos el miembro nuevo
                 $miembroNuevo = new miembroEquipo([
-                    'id' => sizeof($total) + 1,
+                    'id' => sizeof(miembroEquipo::get()) + 1,
                     'idEquipo' => sizeof($totalEquipos) + 1,
                     'idJugador' => $idCreador
                 ]);
@@ -273,6 +271,55 @@ class equiposC extends Controller {
             } else {
                 return response()->json(['creado' => false], 500);
             }
+        }
+    }
+
+    public function getFullTeam(Request $request) {
+        //Miramos si soy dueño de algun equipo del juego que le pasemos
+        $miEquipo = equipo::where('idCreador', '=', $request->idJugador)
+                        ->where('idJuego', '=', $request->idJuego)->get();
+
+        //Si soy sueño de algun equipo
+        if (sizeof($miEquipo) > 0) {
+            $miEquipoAux = [];
+            //Devuelvo a ese equipo que quiero inscribir en el torneo
+            $miEquipoAux = [
+                'id' => $miEquipo[0]->id,
+                'nombre' => $miEquipo[0]->nombre,
+                'idCreador' => $miEquipo[0]->idCreador,
+                'idJuego' => $miEquipo[0]->idJuego,
+                'max_players' => $miEquipo[0]->max_players,
+                'participantes' => sizeof(miembroEquipo::where('idEquipo', '=', $miEquipo[0]->id)->get()),
+                'pertenece' => sizeof(torneo_equipo::where('id_equipo','=',$miEquipo[0]->id)->where('id_torneo','=',$request->idTorneo)->get())
+            ];
+            return response()->json(['miEquipo' => $miEquipoAux], 200);
+
+            //Si no soy dueño de ningun equipo
+        } else {
+            //Miro si pertenezco a algun equipo
+            $equiposPertenezco = miembroEquipo::where('idJugador', '=', $request->idJugador)->get();
+//            return response()->json(['equipos' => $equiposPertenezco], 200);
+            //Creo el array que va a tener los equipos a los que pertenezco
+            $return = [];
+            //Recorremos todos los equipos a los que pertenezco
+            foreach ($equiposPertenezco as $i => $equipo) {
+                //Miro el equipo principal al cual pertenezco
+                $equipoAux2 = equipo::where('id', '=', $equipo->idEquipo)->first();
+                //Miro si el juego del que trata es el mismo que el del torneo
+                //Si trata sobre el mismo juego
+                $equipoPadre = [];
+                if ($equipoAux2->idJuego == $request->idJuego) {
+                    $equipoPadre = [
+                        'id' => $equipoAux2->id,
+                        'nombre' => $equipoAux2->nombre,
+                        'idCreador' => $equipoAux2->idCreador,
+                    ];
+                }
+                $return = $return + [
+                    $i => $equipoPadre
+                ];
+            }
+            return response()->json(['equipos' => $return], 200);
         }
     }
 
