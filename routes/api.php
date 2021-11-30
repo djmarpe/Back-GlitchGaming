@@ -96,3 +96,6 @@ Route::post('/juego/getTipoModalidad', [App\Http\Controllers\juegoC::class, 'get
 Route::post('/juego/getModalidad', [App\Http\Controllers\juegoC::class, 'getModalidad']);
 Route::post('/torneo/crearTorneo', [App\Http\Controllers\torneosC::class, 'crearTorneo']);
 Route::post('/torneo/getReglas', [App\Http\Controllers\torneosC::class, 'getReglas']);
+Route::post('/torneo/es1vs1', [App\Http\Controllers\torneosC::class, 'es1vs1']);
+Route::post('/torneo/inscribirse1vs1', [App\Http\Controllers\torneosC::class, 'inscribirse1vs1']);
+Route::post('/torneo/pertenezco1vs1', [App\Http\Controllers\torneosC::class, 'pertenezco1vs1']);

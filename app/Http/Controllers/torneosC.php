@@ -157,10 +157,10 @@ class torneosC extends Controller {
         $cuantos = torneo_equipo::where('id_torneo', '=', $torneo->id)->get();
         $fases = [];
         $arrayFases = fase::where('id_torneo', '=', $request->idTorneo)->get();
-        foreach ($arrayFases as $i => $fase){
-            $tipo = tipo::where('id','=',$fase->id_tipo)->first();
+        foreach ($arrayFases as $i => $fase) {
+            $tipo = tipo::where('id', '=', $fase->id_tipo)->first();
             $fases = $fases + [
-              $i => $tipo->tipo  
+                $i => $tipo->tipo
             ];
         }
         $torneosAux = [
@@ -179,7 +179,7 @@ class torneosC extends Controller {
             "nombre" => $torneo->nombre,
             "participantes" => sizeof($cuantos),
             "fases" => $fases,
-            "modalidad" => modalidad::where('id','=',$torneo->id_modalidad)->first()->Modalidad
+            "modalidad" => modalidad::where('id', '=', $torneo->id_modalidad)->first()->Modalidad
         ];
         return response()->json(['torneo' => $torneosAux], 200);
     }
@@ -326,10 +326,45 @@ class torneosC extends Controller {
             return response()->json(['creado' => false], 500);
         }
     }
-    
+
     public function getReglas(Request $request) {
-        $reglas = torneos::where('id','=',$request->idTorneo)->first()->reglas;
-        return response()->json(['reglas' => $reglas],200);
+        $reglas = torneos::where('id', '=', $request->idTorneo)->first()->reglas;
+        return response()->json(['reglas' => $reglas], 200);
+    }
+
+    public function es1vs1(Request $request) {
+        $idModalidadtorneo = torneos::where('id', '=', $request->idTorneo)->first()->id_modalidad;
+        $modalidad = modalidad::where('id', '=', $idModalidadtorneo)->first()->Modalidad;
+
+        if ($modalidad == '1vs1') {
+            return response()->json(['es1vs1' => true], 200);
+        } else {
+            return response()->json(['es1vs1' => false], 200);
+        }
+    }
+
+    public function inscribirse1vs1(Request $request) {
+        $nuevoEquipo = new torneo_equipo([
+            'id' => sizeof(torneo_equipo::get()) + 1,
+            'id_torneo' => $request->idTorneo,
+            'id_jugador' => $request->idJugador
+        ]);
+
+        if ($nuevoEquipo->save()) {
+            return response()->json(['unido' => true], 200);
+        } else {
+            return response()->json(['unido' => false], 500);
+        }
+    }
+
+    public function pertenezco1vs1(Request $request) {
+        $existe = torneo_equipo::where('id_torneo', '=', $request->idTorneo)->where('id_jugador', '=', $request->idJugador)->get();
+    
+        if(sizeof($existe)>0){
+            return response()->json(['pertenezco1vs1'=>true],200);
+        }else{
+            return response()->json(['pertenezco1vs1'=>false],200);
+        }
     }
 
 }

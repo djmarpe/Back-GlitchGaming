@@ -13,6 +13,7 @@ class torneo_equipo extends Model
     protected $fillable = [
         'id',
         'id_torneo',
-        'id_equipo'
+        'id_equipo',
+        'id_jugador'
     ];
 }
