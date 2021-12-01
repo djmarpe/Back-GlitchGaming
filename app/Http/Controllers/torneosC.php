@@ -193,15 +193,20 @@ class torneosC extends Controller {
         $sustitucion = array('%20', '%23');
         $jugador = str_replace($quitarTexto, $sustitucion, $player);
 
+//        return response()->json(['jugador'=>$jugador],200);
+        
         //Scrap con curl
         $curl = curl_init('https://tracker.gg/valorant/profile/riot/' . $jugador . '/overview?playlist=competitive');
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE);
         $page = curl_exec($curl);
         curl_close($curl);
-
-        $re = '/<span class="valorant-highlighted-stat__value" data-v-0e94bbe2 data-v-88450ef0>(.*?)<\/span>/m';
+        
+//        dd($page);
+        
+        $re = '/<span class="valorant-highlighted-stat__value" data-v-0e94bbe2 data-v-2f55a7ea>(.*?)<\/span>/m';
 
         preg_match_all($re, $page, $matches, PREG_SET_ORDER, 0);
+//        dd($matches);
         $stats = [];
         for ($i = 0; $i < sizeof($matches) - 1; $i++) {
             for ($j = 1; $j < sizeof($matches[$i]); $j++) {
@@ -211,11 +216,11 @@ class torneosC extends Controller {
                 // donde obtengo los datos si pasas de X rango cambia la forma de 
                 // representacion de los datos y hay que hacer un segundo filtrado
                 if (is_numeric($matches[$i][$j][0])) {
-                    $re = '/<div class="label" data-v-b39ab534>(.*?)<\/div>/m';
+                    $re = '/<span class="valorant-highlighted-stat__label" data-v-0e94bbe2 data-v-2f55a7ea>(.*?)<\/span>/m';
                     preg_match_all($re, $page, $matches, PREG_SET_ORDER, 0);
-                    dd($matches);
+//                    dd($matches);
                     $stats = [
-                        "rank" => $matches[$i][$j]
+                        "rank" => $matches[0][1]
                     ];
                 } else {
                     $stats = [
@@ -344,8 +349,12 @@ class torneosC extends Controller {
     }
 
     public function inscribirse1vs1(Request $request) {
+        $totalMiembros = torneo_equipo::get();
+        
+        $ultimoId = $totalMiembros[sizeof($totalMiembros)-1]->id;
+        
         $nuevoEquipo = new torneo_equipo([
-            'id' => sizeof(torneo_equipo::get()) + 1,
+            'id' => $ultimoId + 1,
             'id_torneo' => $request->idTorneo,
             'id_jugador' => $request->idJugador
         ]);
