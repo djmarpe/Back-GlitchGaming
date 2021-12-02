@@ -16,6 +16,7 @@ class CreateFasesTable extends Migration
         Schema::create('fase', function (Blueprint $table) {
             $table->increments('id');
             $table->bigInteger('id_torneo');
+            $table->bigInteger('num_fase');
             $table->bigInteger('id_tipo');
             $table->string('resultado');
             $table->timestamps();

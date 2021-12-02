@@ -16,14 +16,18 @@ class CreateTorneosTable extends Migration
         Schema::create('torneos', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('idJuego');
-            $table->integer('diaFin');
-            $table->integer('mesFin');
-            $table->integer('anioFin');
-            $table->integer('diaComienzo');
-            $table->integer('mesComienzo');
-            $table->integer('anioComienzo');
-            $table->integer('equiposInscritos');
-            $table->integer('premio');
+            $table->integer('dia_fin');
+            $table->integer('mes_fin');
+            $table->integer('anio_fin');
+            $table->integer('dia_comienzo');
+            $table->integer('mes_comienzo');
+            $table->integer('anio_comienzo');
+            $table->string('premio');
+            $table->string('reglas');
+            $table->integer('max_players');
+            $table->integer('estado');
+            $table->string('nombre');
+            $table->integer('id_modalidad');
             $table->tinyInteger('ultimo');
             $table->timestamps();
         });

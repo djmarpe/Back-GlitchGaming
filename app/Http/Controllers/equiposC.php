@@ -59,10 +59,13 @@ class equiposC extends Controller {
         $return = [];
         $miembro = [];
 
+//        return response()->json(["miembros" => $miembros[0]->id], 200);
         foreach ($miembros as $i => $miembro) {
+//            return response()->json(["miembro" => User::where('id','=',$miembro->id)->first()->nombreUsuario], 200);
             $miembro = [
-                "id" => $miembro->miembro->id,
-                "nombreUsuario" => $miembro->miembro->nombreUsuario
+                "id" => $miembro->id,
+                "nombreUsuario" => User::where('id','=',$miembro->id)->first()->nombreUsuario
+//                "nombreUsuario" => $miembro->miembro->nombreUsuario
             ];
             $return = $return + [
                 $i => $miembro

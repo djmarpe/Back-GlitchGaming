@@ -16,7 +16,8 @@ class CreateTorneoEquiposTable extends Migration
         Schema::create('torneo_equipo', function (Blueprint $table) {
             $table->id();
             $table->bigInteger('id_torneo');
-            $table->bigInteger('id_equipo');
+            $table->bigInteger('id_equipo')->nullable(true);
+            $table->bigInteger('id_jugador')->nullable(true);
             $table->timestamps();
         });
     }

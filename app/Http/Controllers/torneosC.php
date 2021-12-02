@@ -375,5 +375,21 @@ class torneosC extends Controller {
             return response()->json(['pertenezco1vs1'=>false],200);
         }
     }
+    
+    public function comenzarTorneo(Request $request) {
+        if (torneos::where('id','=',$request->id)->update(['estado'=>1])) {
+            return response()->json(['comenzado' => true],200);
+        }else{
+            return response()->json(['comenzado' => false],500);
+        }
+    }
+    
+    public function finalizarTorneo(Request $request) {
+        if (torneos::where('id','=',$request->id)->update(['estado'=>2])) {
+            return response()->json(['finalizado' => true],200);
+        }else{
+            return response()->json(['finalizado' => false],500);
+        }
+    }
 
 }
