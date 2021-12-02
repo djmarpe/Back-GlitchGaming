@@ -59,6 +59,7 @@ class userC extends Controller {
             'estado' => $user->estado,
             'verificado' => $user->verificado,
             'descripcion' => $user->descripcion,
+            'valorant' => $user->valorant,
             'rol' => $rol->roles->id
         ];
 
@@ -115,6 +116,19 @@ class userC extends Controller {
 
         $usuario = User::where("id", $params->id)->first();
         $usuario["descripcion"] = $params->description;
+        $usuario->save();
+        return response()->json($usuario, 200);
+    }
+    
+    public function editValorant(Request $params) {
+        //Hacemos una segunda validacion en el servidor
+        $params->validate([
+            'id' => 'required|integer',
+            'password' => 'string',
+        ]);
+
+        $usuario = User::where("id", $params->id)->first();
+        $usuario["valorant"] = $params->valorant;
         $usuario->save();
         return response()->json($usuario, 200);
     }

@@ -40,6 +40,7 @@ Route::group(['middleware' => 'auth:api'], function() {
     Route::post('/editUsername', [App\Http\Controllers\userC::class, 'editUsername']);
     Route::post('/editPassword', [App\Http\Controllers\userC::class, 'editPassword']);
     Route::post('/editDescription', [App\Http\Controllers\userC::class, 'editDescription']);
+    Route::post('/editValorant', [App\Http\Controllers\userC::class, 'editValorant']);
     Route::post('/logout', [App\Http\Controllers\userC::class, 'logout']);
     //Equipos
     Route::post('/getEquipos', [App\Http\Controllers\equiposC::class, 'getEquipos']);
