@@ -102,3 +102,4 @@ Route::post('/torneo/inscribirse1vs1', [App\Http\Controllers\torneosC::class, 'i
 Route::post('/torneo/pertenezco1vs1', [App\Http\Controllers\torneosC::class, 'pertenezco1vs1']);
 Route::post('/torneo/comenzarTorneo',[App\Http\Controllers\torneosC::class, 'comenzarTorneo']);
 Route::post('/torneo/finalizarTorneo',[App\Http\Controllers\torneosC::class, 'finalizarTorneo']);
+Route::post('/torneo/getFases', [App\Http\Controllers\torneosC::class, 'getFases']);

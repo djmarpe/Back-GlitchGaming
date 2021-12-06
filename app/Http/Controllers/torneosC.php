@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\torneos;
 use App\Models\torneo_equipo;
+use App\Models\miembroEquipo;
+use App\Models\User;
 use App\Models\fase;
 use App\Models\modalidad;
 use App\Models\tipo;
+use App\Models\encuentro;
 use Goutte\Client;
 
 class torneosC extends Controller {
@@ -194,15 +197,14 @@ class torneosC extends Controller {
         $jugador = str_replace($quitarTexto, $sustitucion, $player);
 
 //        return response()->json(['jugador'=>$jugador],200);
-        
         //Scrap con curl
         $curl = curl_init('https://tracker.gg/valorant/profile/riot/' . $jugador . '/overview?playlist=competitive');
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE);
         $page = curl_exec($curl);
         curl_close($curl);
-        
+
 //        dd($page);
-        
+
         $re = '/<span class="valorant-highlighted-stat__value" data-v-0e94bbe2 data-v-2f55a7ea>(.*?)<\/span>/m';
 
         preg_match_all($re, $page, $matches, PREG_SET_ORDER, 0);
@@ -350,9 +352,9 @@ class torneosC extends Controller {
 
     public function inscribirse1vs1(Request $request) {
         $totalMiembros = torneo_equipo::get();
-        
-        $ultimoId = $totalMiembros[sizeof($totalMiembros)-1]->id;
-        
+
+        $ultimoId = $totalMiembros[sizeof($totalMiembros) - 1]->id;
+
         $nuevoEquipo = new torneo_equipo([
             'id' => $ultimoId + 1,
             'id_torneo' => $request->idTorneo,
@@ -368,28 +370,617 @@ class torneosC extends Controller {
 
     public function pertenezco1vs1(Request $request) {
         $existe = torneo_equipo::where('id_torneo', '=', $request->idTorneo)->where('id_jugador', '=', $request->idJugador)->get();
-    
-        if(sizeof($existe)>0){
-            return response()->json(['pertenezco1vs1'=>true],200);
-        }else{
-            return response()->json(['pertenezco1vs1'=>false],200);
+
+        if (sizeof($existe) > 0) {
+            return response()->json(['pertenezco1vs1' => true], 200);
+        } else {
+            return response()->json(['pertenezco1vs1' => false], 200);
         }
     }
-    
+
     public function comenzarTorneo(Request $request) {
-        if (torneos::where('id','=',$request->id)->update(['estado'=>1])) {
-            return response()->json(['comenzado' => true],200);
-        }else{
-            return response()->json(['comenzado' => false],500);
+        if (torneos::where('id', '=', $request->id)->update(['estado' => 1])) {
+            $equipos = [];
+            $todos = [];
+            $idEquipo = 0;
+            //Obtengo todos los equipos que estan en el torneo
+            $todosEquipos = torneo_equipo::where('id_torneo', '=', $request->id)->get();
+            for ($i = 0; $i < sizeof($todosEquipos); $i++) {
+                $idEquipo = 0;
+                $miembros = [];
+                $equipo = $todosEquipos[$i];
+                $idEquipo = $todosEquipos[$i]->id_equipo;
+                $miembrosEquipo = miembroEquipo::where('idEquipo', '=', $idEquipo)->get();
+                for ($j = 0; $j < sizeof($miembrosEquipo); $j++) {
+                    //Obtengo cada nombre de Valorant de cada jugador
+                    $valorantName = User::where('id', '=', $miembrosEquipo[$j]->idJugador)->first()->valorant;
+                    //Obtengo sus stats
+                    $rango = $this->valorantStats($valorantName);
+                    if (empty($rango)) {
+                        return response()->json(['rango' => 'vacio ' . $miembrosEquipo[$j]->idJugador], 500);
+                    } else {
+                        $miembros = $miembros + [
+                            $j => $rango['rank']
+                        ];
+                    }
+                }
+
+                $todos = [
+                    'id_equipo' => $idEquipo,
+                    'jugadores' => $miembros
+                ];
+
+                $equipos = $equipos + [
+                    $i => $todos
+                ];
+            }
+            $fase = fase::where('id_torneo', '=', $request->id)->where('num_fase', '=', 1)->first()->id;
+            $rangosEquipo = $this->generarEmparejamientos($equipos, $fase);
+            return response()->json(['rangos' => $rangosEquipo], 200);
+        } else {
+            return response()->json(['comenzado' => false], 500);
         }
     }
-    
+
     public function finalizarTorneo(Request $request) {
-        if (torneos::where('id','=',$request->id)->update(['estado'=>2])) {
-            return response()->json(['finalizado' => true],200);
-        }else{
-            return response()->json(['finalizado' => false],500);
+        if (torneos::where('id', '=', $request->id)->update(['estado' => 2])) {
+            return response()->json(['finalizado' => true], 200);
+        } else {
+            return response()->json(['finalizado' => false], 500);
         }
+    }
+
+    function valorantStats($nombreJugador) {
+        $player = $this->string_sanitize($nombreJugador);
+
+        $quitarTexto = array(' ', '#');
+        $sustitucion = array('%20', '%23');
+        $jugador = str_replace($quitarTexto, $sustitucion, $player);
+
+//        return response()->json(['jugador'=>$jugador],200);
+        //Scrap con curl
+        $curl = curl_init('https://tracker.gg/valorant/profile/riot/' . $jugador . '/overview?playlist=competitive');
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE);
+        $page = curl_exec($curl);
+        curl_close($curl);
+
+//        dd($page);
+
+        $re = '/<span class="valorant-highlighted-stat__value" data-v-0e94bbe2 data-v-2f55a7ea>(.*?)<\/span>/m';
+
+        preg_match_all($re, $page, $matches, PREG_SET_ORDER, 0);
+//        dd($matches);
+        $stats = [];
+        for ($i = 0; $i < sizeof($matches) - 1; $i++) {
+            for ($j = 1; $j < sizeof($matches[$i]); $j++) {
+
+                // Los nombres de los rango nunca comienzan por numero por lo que
+                // compruebo si comienza por numero, ya que la página desde 
+                // donde obtengo los datos si pasas de X rango cambia la forma de 
+                // representacion de los datos y hay que hacer un segundo filtrado
+                if (is_numeric($matches[$i][$j][0])) {
+                    $re = '/<span class="valorant-highlighted-stat__label" data-v-0e94bbe2 data-v-2f55a7ea>(.*?)<\/span>/m';
+                    preg_match_all($re, $page, $matches, PREG_SET_ORDER, 0);
+//                    dd($matches);
+                    $stats = [
+                        "rank" => $matches[0][1]
+                    ];
+                } else {
+                    $stats = [
+                        "rank" => $matches[0][1]
+                    ];
+                }
+            }
+        }
+        return $stats;
+    }
+
+    function generarEmparejamientos($equipos, $fase) {
+        //Contador de totales
+        $totalMiembros = 0;
+        $rangosEquipo = [];
+        //Recorremos todos los equipos
+        foreach ($equipos as $i => $equipo) {
+            $id_equipo = $equipo['id_equipo'];
+            $puntos = 0;
+            $hierro = 0;
+            $plata = 0;
+            $oro = 0;
+            $platino = 0;
+            $diamante = 0;
+            $immortal = 0;
+            $radiante = 0;
+            $rangoEquipo = 0;
+            $equipoAux = [];
+            foreach ($equipo['jugadores'] as $j => $miembro) {
+                switch ($miembro) {
+                    case 'Iron 1':
+                    case 'Iron 3':
+                    case 'Iron 3':
+                        $puntos += 5;
+                        $totalMiembros++;
+                        $hierro++;
+                        break;
+                    case 'Silver 1':
+                    case 'Silver 2':
+                    case 'Silver 3':
+                        $puntos += 10;
+                        $totalMiembros++;
+                        $plata++;
+                        break;
+                    case 'Gold 1':
+                    case 'Gold 2':
+                    case 'Gold 3':
+                        $puntos += 15;
+                        $totalMiembros++;
+                        $oro++;
+                        break;
+                    case 'Platinum 1':
+                    case 'Platinum 2':
+                    case 'Platinum 3':
+                        $puntos += 20;
+                        $totalMiembros++;
+                        $platino++;
+                        break;
+                    case 'Diamond 1':
+                    case 'Diamond 2':
+                    case 'Diamond 3':
+                        $puntos += 25;
+                        $totalMiembros++;
+                        $diamante++;
+                        break;
+                    case 'Immortal':
+                        $puntos += 30;
+                        $totalMiembros++;
+                        $immortal++;
+                        break;
+                    case 'Radiant':
+                        $puntos += 35;
+                        $totalMiembros++;
+                        $radiante++;
+                        break;
+                }
+            }
+            //Comprobamos la puntuacion obtenida y determinamos el rango del equipo
+            if ($puntos >= 25 && $puntos < 50) {
+                $rangoEquipo = 'Hierro';
+            } else {
+                if ($puntos >= 50 && $puntos < 75) {
+                    $rangoEquipo = 'Plata';
+                } else {
+                    if ($puntos >= 75 && $puntos < 100) {
+                        $rangoEquipo = 'Oro';
+                    } else {
+                        if ($puntos >= 100 && $puntos < 125) {
+                            $rangoEquipo = 'Platino';
+                        } else {
+                            if ($puntos >= 125 && $puntos < 150) {
+                                $rangoEquipo = 'Diamante';
+                            } else {
+                                if ($puntos >= 150 && $puntos < 175) {
+                                    $rangoEquipo = 'Immortal';
+                                } else {
+                                    if ($puntos == 175) {
+                                        $rangoEquipo = 'Radiante';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            $equipoAux = $equipoAux + [
+                'id_equipo' => $id_equipo,
+                'rango' => $rangoEquipo
+            ];
+            $rangosEquipo = $rangosEquipo + [
+                $i => $equipoAux,
+            ];
+        }
+
+        $equiposHierro = [];
+        $equiposPlata = [];
+        $equiposOro = [];
+        $equiposPlatino = [];
+        $equiposDiamante = [];
+        $equiposImmortal = [];
+        $equiposRadiante = [];
+        $llegamos = [];
+
+        $equiposSobrantes = [];
+
+        $contSobrante = 0;
+        $contHierro = 0;
+        $contPlata = 0;
+        $contOro = 0;
+        $contPlatino = 0;
+        $contDiamante = 0;
+        $contImmortal = 0;
+        $contRadiante = 0;
+        
+        foreach ($rangosEquipo as $clave => $equipoOK) {
+            switch ($equipoOK['rango']) {
+                case 'Hierro':
+                    $equiposHierro += [$contHierro => $equipoOK];
+                    $contHierro++;
+                    break;
+                case 'Plata':
+                    $equiposPlata += [$contPlata => $equipoOK];
+                    $contPlata++;
+                    break;
+                case 'Oro':
+                    $equiposOro += [$contOro => $equipoOK];
+                    $contOro++;
+                    break;
+                case 'Platino':
+                    $equiposPlatino += [$contPlatino => $equipoOK];
+                    $contPlatino++;
+                    break;
+                case 'Diamante':
+                    $equiposDiamante += [$contDiamante => $equipoOK];
+                    $contDiamante++;
+                    break;
+                case 'Immortal':
+                    $equiposImmortal += [$contImmortal => $equipoOK];
+                    $contImmortal++;
+                    break;
+                case 'Radiante':
+                    $equiposRadiante += [$contRadiante => $equipoOK];
+                    $contRadiante++;
+                    break;
+            }
+            $llegamos = [
+                'equiposHierro' => $equiposHierro,
+                'equiposPlata' => $equiposPlata,
+                'equiposOro' => $equiposOro,
+                'equiposPlatino' => $equiposPlatino,
+                'equiposDiamante' => $equiposDiamante,
+                'equiposImmortal' => $equiposImmortal,
+                'equiposRadiante' => $equiposRadiante
+            ];
+        }
+
+//        return $llegamos;
+        //Miramos cuantos equipos hay del mismo rango para hacer el matchmaking
+
+        if (sizeof($equiposHierro) > 0) {
+            if (is_int(sizeof($equiposHierro) / 2)) {
+                $i = 0;
+                while ($i < sizeof($equiposHierro)) {
+                    $equipo1 = $equiposHierro[$i];
+                    $i++;
+                    $equipo2 = $equiposHierro[$i];
+                    $encuentro = new encuentro([
+                        'id_fase' => $fase,
+                        'id_equipo1' => $equipo1['id_equipo'],
+                        'id_equipo2' => $equipo2['id_equipo'],
+                        'resultado_equipo1' => 0,
+                        'resultado_equipo2' => 0
+                    ]);
+                    $encuentro->save();
+                    $i++;
+                }
+//                if ($i >= sizeof($equiposHierro)) {
+//                    return 'generado';
+//                }
+            } else {
+                $equipoHierroAux = end($equiposHierro);
+                $equiposSobrantes += [$contSobrante => $equipoHierroAux];
+                $contSobrante++;
+                $i = 0;
+                while ($i < sizeof($equiposHierro)-1) {
+                    $equipo1 = $equiposHierro[$i];
+                    $i++;
+                    $equipo2 = $equiposHierro[$i];
+                    $encuentro = new encuentro([
+                        'id_fase' => $fase,
+                        'id_equipo1' => $equipo1['id_equipo'],
+                        'id_equipo2' => $equipo2['id_equipo'],
+                        'resultado_equipo1' => 0,
+                        'resultado_equipo2' => 0
+                    ]);
+                    $encuentro->save();
+                    $i++;
+                }
+//                if ($i >= sizeof($equiposHierro)) {
+//                    return 'generado';
+//                }
+            }
+        }
+        if (sizeof($equiposPlata) > 0) {
+            if (is_int(sizeof($equiposPlata) / 2)) {
+                $i = 0;
+                while ($i < sizeof($equiposPlata)) {
+                    $equipo1 = $equiposPlata[$i];
+                    $i++;
+                    $equipo2 = $equiposPlata[$i];
+                    $encuentro = new encuentro([
+                        'id_fase' => $fase,
+                        'id_equipo1' => $equipo1['id_equipo'],
+                        'id_equipo2' => $equipo2['id_equipo'],
+                        'resultado_equipo1' => 0,
+                        'resultado_equipo2' => 0
+                    ]);
+                    $encuentro->save();
+                    $i++;
+                }
+//                if ($i >= sizeof($equiposPlata)) {
+//                    return 'generado';
+//                }
+            } else {
+                $equipoPlataAux = end($equiposPlata);
+                $equiposSobrantes += [$contSobrante => $equipoPlataAux];
+                $contSobrante++;
+                $i = 0;
+                while ($i < sizeof($equiposPlata)-1) {
+                    $equipo1 = $equiposPlata[$i];
+                    $i++;
+                    $equipo2 = $equiposPlata[$i];
+                    $encuentro = new encuentro([
+                        'id_fase' => $fase,
+                        'id_equipo1' => $equipo1['id_equipo'],
+                        'id_equipo2' => $equipo2['id_equipo'],
+                        'resultado_equipo1' => 0,
+                        'resultado_equipo2' => 0
+                    ]);
+                    $encuentro->save();
+                    $i++;
+                }
+//                if ($i >= sizeof($equiposPlata)) {
+//                    return 'generado';
+//                }
+            }
+        }
+        if (sizeof($equiposOro) > 0) {
+            if (is_int(sizeof($equiposOro) / 2)) {
+                $i = 0;
+                while ($i < sizeof($equiposOro)) {
+                    $equipo1 = $equiposOro[$i];
+                    $i++;
+                    $equipo2 = $equiposOro[$i];
+                    $encuentro = new encuentro([
+                        'id_fase' => $fase,
+                        'id_equipo1' => $equipo1['id_equipo'],
+                        'id_equipo2' => $equipo2['id_equipo'],
+                        'resultado_equipo1' => 0,
+                        'resultado_equipo2' => 0
+                    ]);
+                    $encuentro->save();
+                    $i++;
+                }
+//                if ($i >= sizeof($equiposOro)) {
+//                    return 'generado';
+//                }
+            } else {
+                $equipoOroAux = end($equiposOro);
+                $equiposSobrantes += [$contSobrante => $equipoOroAux];
+                $contSobrante++;
+                $i = 0;
+                while ($i < sizeof($equiposOro)-1) {
+                    $equipo1 = $equiposOro[$i];
+                    $i++;
+                    $equipo2 = $equiposOro[$i];
+                    $encuentro = new encuentro([
+                        'id_fase' => $fase,
+                        'id_equipo1' => $equipo1['id_equipo'],
+                        'id_equipo2' => $equipo2['id_equipo'],
+                        'resultado_equipo1' => 0,
+                        'resultado_equipo2' => 0
+                    ]);
+                    $encuentro->save();
+                    $i++;
+                }
+//                if ($i >= sizeof($equiposOro)) {
+//                    return 'generado';
+//                }
+            }
+        }
+        if (sizeof($equiposPlatino) > 0) {
+            if (is_int(sizeof($equiposPlatino) / 2)) {
+                $i = 0;
+                while ($i < sizeof($equiposPlatino)) {
+                    $equipo1 = $equiposPlatino[$i];
+                    $i++;
+                    $equipo2 = $equiposPlatino[$i];
+                    $encuentro = new encuentro([
+                        'id_fase' => $fase,
+                        'id_equipo1' => $equipo1['id_equipo'],
+                        'id_equipo2' => $equipo2['id_equipo'],
+                        'resultado_equipo1' => 0,
+                        'resultado_equipo2' => 0
+                    ]);
+                    $encuentro->save();
+                    $i++;
+                }
+//                if ($i >= sizeof($equiposPlatino)) {
+//                    return 'generado';
+//                }
+            } else {
+                $equipoPlatinoAux = end($equiposPlatino);
+                $equiposSobrantes += [$contSobrante => $equipoPlatinoAux];
+                $contSobrante++;
+                $i = 0;
+                while ($i < sizeof($equiposPlatino)-1) {
+                    $equipo1 = $equiposPlatino[$i];
+                    $i++;
+                    $equipo2 = $equiposPlatino[$i];
+                    $encuentro = new encuentro([
+                        'id_fase' => $fase,
+                        'id_equipo1' => $equipo1['id_equipo'],
+                        'id_equipo2' => $equipo2['id_equipo'],
+                        'resultado_equipo1' => 0,
+                        'resultado_equipo2' => 0
+                    ]);
+                    $encuentro->save();
+                    $i++;
+                }
+//                if ($i >= sizeof($equiposPlatino)) {
+//                    return 'generado';
+//                }
+            }
+        }
+        if (sizeof($equiposDiamante) > 0) {
+            if (is_int(sizeof($equiposDiamante) / 2)) {
+                $i = 0;
+                while ($i < sizeof($equiposDiamante)) {
+                    $equipo1 = $equiposDiamante[$i];
+                    $i++;
+                    $equipo2 = $equiposDiamante[$i];
+                    $encuentro = new encuentro([
+                        'id_fase' => $fase,
+                        'id_equipo1' => $equipo1['id_equipo'],
+                        'id_equipo2' => $equipo2['id_equipo'],
+                        'resultado_equipo1' => 0,
+                        'resultado_equipo2' => 0
+                    ]);
+                    $encuentro->save();
+                    $i++;
+                }
+//                if ($i >= sizeof($equiposDiamante)) {
+//                    return 'generado';
+//                }
+            } else {
+                $equipoDiamanteAux = end($equiposDiamante);
+                $equiposSobrantes += [$contSobrante => $equipoDiamanteAux];
+                $contSobrante++;
+                $i = 0;
+                while ($i < sizeof($equiposDiamante)-1) {
+                    $equipo1 = $equiposDiamante[$i];
+                    $i++;
+                    $equipo2 = $equiposDiamante[$i];
+                    $encuentro = new encuentro([
+                        'id_fase' => $fase,
+                        'id_equipo1' => $equipo1['id_equipo'],
+                        'id_equipo2' => $equipo2['id_equipo'],
+                        'resultado_equipo1' => 0,
+                        'resultado_equipo2' => 0
+                    ]);
+                    $encuentro->save();
+                    $i++;
+                }
+//                if ($i >= sizeof($equiposDiamante)) {
+//                    return 'generado';
+//                }
+            }
+        }
+        if (sizeof($equiposImmortal) > 0) {
+            if (is_int(sizeof($equiposImmortal) / 2)) {
+                $i = 0;
+                while ($i < sizeof($equiposImmortal)) {
+                    $equipo1 = $equiposImmortal[$i];
+                    $i++;
+                    $equipo2 = $equiposImmortal[$i];
+                    $encuentro = new encuentro([
+                        'id_fase' => $fase,
+                        'id_equipo1' => $equipo1['id_equipo'],
+                        'id_equipo2' => $equipo2['id_equipo'],
+                        'resultado_equipo1' => 0,
+                        'resultado_equipo2' => 0
+                    ]);
+                    $encuentro->save();
+                    $i++;
+                }
+//                if ($i >= sizeof($equiposImmortal)) {
+//                    return 'generado';
+//                }
+            } else {
+                $equipoImmortalAux = end($equiposImmortal);
+                $equiposSobrantes += [$contSobrante => $equipoImmortalAux];
+                $contSobrante++;
+                $i = 0;
+                while ($i < sizeof($equiposImmortal)-1) {
+                    $equipo1 = $equiposImmortal[$i];
+                    $i++;
+                    $equipo2 = $equiposImmortal[$i];
+                    $encuentro = new encuentro([
+                        'id_fase' => $fase,
+                        'id_equipo1' => $equipo1['id_equipo'],
+                        'id_equipo2' => $equipo2['id_equipo'],
+                        'resultado_equipo1' => 0,
+                        'resultado_equipo2' => 0
+                    ]);
+                    $encuentro->save();
+                    $i++;
+                }
+//                if ($i >= sizeof($equiposImmortal)) {
+//                    return 'generado';
+//                }
+            }
+        }
+        if (sizeof($equiposRadiante) > 0) {
+            if (is_int(sizeof($equiposRadiante) / 2)) {
+                $i = 0;
+                while ($i < sizeof($equiposRadiante)) {
+                    $equipo1 = $equiposRadiante[$i];
+                    $i++;
+                    $equipo2 = $equiposRadiante[$i];
+                    $encuentro = new encuentro([
+                        'id_fase' => $fase,
+                        'id_equipo1' => $equipo1['id_equipo'],
+                        'id_equipo2' => $equipo2['id_equipo'],
+                        'resultado_equipo1' => 0,
+                        'resultado_equipo2' => 0
+                    ]);
+                    $encuentro->save();
+                    $i++;
+                }
+//                if ($i >= sizeof($equiposRadiante)) {
+//                    return 'generado';
+//                }
+            } else {
+                $equipoRadianteAux = end($equiposRadiante);
+                $equiposSobrantes += [$contSobrante => $equipoRadianteAux];
+                $contSobrante++;
+                $i = 0;
+                while ($i < sizeof($equiposRadiante)-1) {
+                    $equipo1 = $equiposRadiante[$i];
+                    $i++;
+                    $equipo2 = $equiposRadiante[$i];
+                    $encuentro = new encuentro([
+                        'id_fase' => $fase,
+                        'id_equipo1' => $equipo1['id_equipo'],
+                        'id_equipo2' => $equipo2['id_equipo'],
+                        'resultado_equipo1' => 0,
+                        'resultado_equipo2' => 0
+                    ]);
+                    $encuentro->save();
+                    $i++;
+                }
+//                if ($i >= sizeof($equiposRadiante)) {
+//                    return 'generado';
+//                }
+            }
+        }
+
+//        return $equiposSobrantes;
+        
+        if (sizeof($equiposSobrantes) > 0) {
+            if (is_int(sizeof($equiposSobrantes) / 2)) {
+                $i = 0;
+                while ($i < sizeof($equiposSobrantes)) {
+                    $equipo1 = $equiposSobrantes[$i];
+                    $i++;
+                    $equipo2 = $equiposSobrantes[$i];
+                    $encuentro = new encuentro([
+                        'id_fase' => $fase,
+                        'id_equipo1' => $equipo1['id_equipo'],
+                        'id_equipo2' => $equipo2['id_equipo'],
+                        'resultado_equipo1' => 0,
+                        'resultado_equipo2' => 0
+                    ]);
+                    $encuentro->save();
+                    $i++;
+                }
+                if ($i >= sizeof($equiposSobrantes)) {
+                    return 'generado';
+                }
+            }
+        }
+    }
+
+    public function getFases(Request $params) {
+        return response()->json(['idTorneo' => $params->id], 200);
     }
 
 }

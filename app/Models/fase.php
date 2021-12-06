@@ -14,6 +14,5 @@ class fase extends Model
         'id_torneo', 
         'num_fase',
         'id_tipo',
-        'resultado'
     ];
 }
