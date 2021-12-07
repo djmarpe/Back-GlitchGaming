@@ -15,4 +15,12 @@ class fase extends Model
         'num_fase',
         'id_tipo',
     ];
+    
+    public function encuentro() {
+        return $this->hasMany('App\Models\encuentro','id_fase','id');
+    }
+    
+    public function tipo() {
+        return $this->hasOne('App\Models\tipo','id','id_tipo');
+    }
 }

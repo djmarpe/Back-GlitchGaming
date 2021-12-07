@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\torneos;
 use App\Models\torneo_equipo;
+use App\Models\equipo;
 use App\Models\miembroEquipo;
 use App\Models\User;
 use App\Models\fase;
@@ -598,7 +599,7 @@ class torneosC extends Controller {
         $contDiamante = 0;
         $contImmortal = 0;
         $contRadiante = 0;
-        
+
         foreach ($rangosEquipo as $clave => $equipoOK) {
             switch ($equipoOK['rango']) {
                 case 'Hierro':
@@ -669,7 +670,7 @@ class torneosC extends Controller {
                 $equiposSobrantes += [$contSobrante => $equipoHierroAux];
                 $contSobrante++;
                 $i = 0;
-                while ($i < sizeof($equiposHierro)-1) {
+                while ($i < sizeof($equiposHierro) - 1) {
                     $equipo1 = $equiposHierro[$i];
                     $i++;
                     $equipo2 = $equiposHierro[$i];
@@ -713,7 +714,7 @@ class torneosC extends Controller {
                 $equiposSobrantes += [$contSobrante => $equipoPlataAux];
                 $contSobrante++;
                 $i = 0;
-                while ($i < sizeof($equiposPlata)-1) {
+                while ($i < sizeof($equiposPlata) - 1) {
                     $equipo1 = $equiposPlata[$i];
                     $i++;
                     $equipo2 = $equiposPlata[$i];
@@ -757,7 +758,7 @@ class torneosC extends Controller {
                 $equiposSobrantes += [$contSobrante => $equipoOroAux];
                 $contSobrante++;
                 $i = 0;
-                while ($i < sizeof($equiposOro)-1) {
+                while ($i < sizeof($equiposOro) - 1) {
                     $equipo1 = $equiposOro[$i];
                     $i++;
                     $equipo2 = $equiposOro[$i];
@@ -801,7 +802,7 @@ class torneosC extends Controller {
                 $equiposSobrantes += [$contSobrante => $equipoPlatinoAux];
                 $contSobrante++;
                 $i = 0;
-                while ($i < sizeof($equiposPlatino)-1) {
+                while ($i < sizeof($equiposPlatino) - 1) {
                     $equipo1 = $equiposPlatino[$i];
                     $i++;
                     $equipo2 = $equiposPlatino[$i];
@@ -845,7 +846,7 @@ class torneosC extends Controller {
                 $equiposSobrantes += [$contSobrante => $equipoDiamanteAux];
                 $contSobrante++;
                 $i = 0;
-                while ($i < sizeof($equiposDiamante)-1) {
+                while ($i < sizeof($equiposDiamante) - 1) {
                     $equipo1 = $equiposDiamante[$i];
                     $i++;
                     $equipo2 = $equiposDiamante[$i];
@@ -889,7 +890,7 @@ class torneosC extends Controller {
                 $equiposSobrantes += [$contSobrante => $equipoImmortalAux];
                 $contSobrante++;
                 $i = 0;
-                while ($i < sizeof($equiposImmortal)-1) {
+                while ($i < sizeof($equiposImmortal) - 1) {
                     $equipo1 = $equiposImmortal[$i];
                     $i++;
                     $equipo2 = $equiposImmortal[$i];
@@ -933,7 +934,7 @@ class torneosC extends Controller {
                 $equiposSobrantes += [$contSobrante => $equipoRadianteAux];
                 $contSobrante++;
                 $i = 0;
-                while ($i < sizeof($equiposRadiante)-1) {
+                while ($i < sizeof($equiposRadiante) - 1) {
                     $equipo1 = $equiposRadiante[$i];
                     $i++;
                     $equipo2 = $equiposRadiante[$i];
@@ -954,7 +955,7 @@ class torneosC extends Controller {
         }
 
 //        return $equiposSobrantes;
-        
+
         if (sizeof($equiposSobrantes) > 0) {
             if (is_int(sizeof($equiposSobrantes) / 2)) {
                 $i = 0;
@@ -980,7 +981,124 @@ class torneosC extends Controller {
     }
 
     public function getFases(Request $params) {
-        return response()->json(['idTorneo' => $params->id], 200);
+        $fases = fase::with("encuentro", "tipo")
+                ->where('id_torneo', '=', $params->id)
+                ->get();
+
+        $return = [];
+//        dd($fases[0]);
+//
+        foreach ($fases as $i => $faseAux) {
+            $fase = [];
+            $encuentro = [];
+            $encuentroOK = [];
+            foreach ($faseAux->encuentro as $j => $encuentroAux) {
+
+                if (empty($encuentroAux->id_equipo1) && !empty($encuentroAux->id_equipo2)) {
+                    $encuentro = [
+                        'id_encuentro' => $encuentroAux->id,
+                        'id_fase' => $encuentroAux->id_fase,
+                        'id_equipo1' => $encuentroAux->id_equipo1,
+                        'id_equipo2' => $encuentroAux->id_equipo2,
+                        'nombre_equipo1' => '',
+                        'nombre_equipo2' => equipo::where('id', '=', $encuentroAux->id_equipo2)->first()->nombre,
+                        'resultado_equipo1' => $encuentroAux->resultado_equipo1,
+                        'resultado_equipo2' => $encuentroAux->resultado_equipo2,
+                    ];
+                } else {
+                    if (empty($encuentroAux->id_equipo2) && !empty($encuentroAux->id_equipo1)) {
+                        $encuentro = [
+                            'id_encuentro' => $encuentroAux->id,
+                            'id_fase' => $encuentroAux->id_fase,
+                            'id_equipo1' => $encuentroAux->id_equipo1,
+                            'id_equipo2' => $encuentroAux->id_equipo2,
+                            'nombre_equipo1' => equipo::where('id', '=', $encuentroAux->id_equipo1)->first()->nombre,
+                            'nombre_equipo2' => '',
+                            'resultado_equipo1' => $encuentroAux->resultado_equipo1,
+                            'resultado_equipo2' => $encuentroAux->resultado_equipo2,
+                        ];
+                    } else {
+                        $encuentro = [
+                            'id_encuentro' => $encuentroAux->id,
+                            'id_fase' => $encuentroAux->id_fase,
+                            'id_equipo1' => $encuentroAux->id_equipo1,
+                            'id_equipo2' => $encuentroAux->id_equipo2,
+                            'nombre_equipo1' => equipo::where('id', '=', $encuentroAux->id_equipo1)->first()->nombre,
+                            'nombre_equipo2' => equipo::where('id', '=', $encuentroAux->id_equipo2)->first()->nombre,
+                            'resultado_equipo1' => $encuentroAux->resultado_equipo1,
+                            'resultado_equipo2' => $encuentroAux->resultado_equipo2,
+                        ];
+                    }
+                }
+                $encuentroOK += [$j => $encuentro];
+            }
+            $fase += [
+                'num_fase' => $faseAux->num_fase,
+                'tipo' => $faseAux->tipo->tipo,
+                'encuentros' => $encuentroOK
+            ];
+            $return += [
+                $i => $fase
+            ];
+        }
+//        return response()->json(['encuentros' => $fases[1]], 200);
+
+
+        return response()->json(['encuentros' => $return], 200);
+    }
+
+    public function pasarFase(Request $params) {
+        $fase = fase::where('id_torneo', '=', $params->idTorneo)
+                ->where('num_fase', '=', $params->num_fase)
+                ->first();
+
+
+        $encuentros = encuentro::where('id_fase', '=', $fase->id)->get();
+//        return response()->json(['encuentos' => $encuentros[1]],200);
+        if (sizeof($encuentros) > 0) {
+            $completo = true;
+            foreach ($encuentros as $i => $encuentro) {
+                if ($encuentro->id_equipo1 == 0) {
+                    $completo = false;
+                    if (encuentro::where('id', '=', $encuentro->id)->update(['id_equipo1' => $params->idEquipo])) {
+                        return response()->json(['pasa' => true], 200);
+                    }
+                }
+                if ($encuentro->id_equipo2 == 0) {
+                    $completo = false;
+                    if (encuentro::where('id', '=', $encuentro->id)->update(['id_equipo2' => $params->idEquipo])) {
+                        return response()->json(['pasa' => true], 200);
+                    }
+                }
+            }
+            
+            if($completo){
+                $encuentro = new encuentro([
+                'id_fase' => $fase->id,
+                'id_equipo1' => $params->idEquipo,
+                'id_equipo2' => null,
+                'resultado_equipo1' => 0,
+                'resultado_equipo2' => 0
+            ]);
+
+            if ($encuentro->save()) {
+                return response()->json(['pasa' => true], 200);
+            }
+            }
+            
+        } else {
+            $encuentro = new encuentro([
+                'id_fase' => $fase->id,
+                'id_equipo1' => $params->idEquipo,
+                'id_equipo2' => null,
+                'resultado_equipo1' => 0,
+                'resultado_equipo2' => 0
+            ]);
+
+            if ($encuentro->save()) {
+                return response()->json(['pasa' => true], 200);
+            }
+        }
     }
 
 }
