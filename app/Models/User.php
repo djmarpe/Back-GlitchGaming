@@ -27,6 +27,7 @@ class User extends Authenticatable {
         'estado', //Estados[0 => deshabilitado, 1 => habilitado]
         'verificado',
         'descripcion',
+        'valorant',
     ];
     protected $hidden = [
         'password',

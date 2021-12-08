@@ -29,6 +29,7 @@ class adminC extends Controller {
             $rol = asignacionRol::with("roles", "users")
                     ->where('idUsuario', $user->id)
                     ->first();
+            
             //Creamos el usuario con todos los datos que vamos a devolver
             $userAux = [
                 'id' => $user->id,
@@ -43,7 +44,7 @@ class adminC extends Controller {
                 'estado' => $user->estado,
                 'verificado' => $user->verificado,
                 'descripcion' => $user->descripcion,
-                'rol' => $rol->roles->id
+                'rol' => $rol
             ];
 
             //Añadimos el usuario al array que vamos a devolver
