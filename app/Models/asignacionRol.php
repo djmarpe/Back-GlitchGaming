@@ -11,6 +11,7 @@ class asignacionRol extends Model
     protected $table = 'asignacion_rol';
     
     protected $fillable = [
+        'id',
         'idRol',
         'idUsuario',
     ];

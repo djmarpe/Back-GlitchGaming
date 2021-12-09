@@ -119,7 +119,7 @@ class userC extends Controller {
         $usuario->save();
         return response()->json($usuario, 200);
     }
-    
+
     public function editValorant(Request $params) {
         //Hacemos una segunda validacion en el servidor
         $params->validate([
@@ -183,6 +183,7 @@ class userC extends Controller {
         ]);
 
         $user = new User([
+            'id' => User::orderBy('id', 'desc')->first()->id + 1,
             'nombre' => $params->nombre,
             'apellidos' => $params->apellidos,
             'diaNacimiento' => $params->diaNacimiento,
@@ -199,7 +200,7 @@ class userC extends Controller {
         $codigo = $this->generarAlfanumerico(0, 15);
         $user->remember_token = $codigo;
 
-        $url = $_SERVER['SERVER_NAME'] . ($_SERVER['SERVER_PORT'] != 80 ? $_SERVER['SERVER_PORT'] : ''). DIRECTORY_SEPARATOR . "public" . DIRECTORY_SEPARATOR . "api" . DIRECTORY_SEPARATOR . "verify" . DIRECTORY_SEPARATOR . $codigo;
+        $url = $_SERVER['SERVER_NAME'] . ($_SERVER['SERVER_PORT'] != 80 ? $_SERVER['SERVER_PORT'] : '') . DIRECTORY_SEPARATOR . "public" . DIRECTORY_SEPARATOR . "api" . DIRECTORY_SEPARATOR . "verify" . DIRECTORY_SEPARATOR . $codigo;
 
         Mail::to($user->email)->send(new Verificar($user->nombreUsuario, $url));
 
@@ -207,6 +208,7 @@ class userC extends Controller {
             $user->estado = 1;
             $user->save();
             asignacionRol::create([
+                'id' => asignacionRol::orderBy('id', 'desc')->first()->id + 1,
                 'idRol' => 3,
                 'idUsuario' => $user->id
             ]);
@@ -229,7 +231,7 @@ class userC extends Controller {
     }
 
     public function verify($codigo) {
-        $user = User::where('remember_token',$codigo)->first();
+        $user = User::where('remember_token', $codigo)->first();
         if ($user != null) {
             $user->email_verified_at = time();
             $user->remember_token = null;
@@ -239,5 +241,5 @@ class userC extends Controller {
             return redirect($url);
         }
     }
-    
+
 }
