@@ -63,8 +63,8 @@ class equiposC extends Controller {
         foreach ($miembros as $i => $miembro) {
 //            return response()->json(["miembro" => User::where('id','=',$miembro->id)->first()->nombreUsuario], 200);
             $miembro = [
-                "id" => $miembro->id,
-                "nombreUsuario" => User::where('id', '=', $miembro->id)->first()->nombreUsuario
+                "id" => $miembro->id_jugador,
+                "nombreUsuario" => User::where('id', '=', $miembro->id_jugador)->first()->nombreUsuario
 //                "nombreUsuario" => $miembro->miembro->nombreUsuario
             ];
             $return = $return + [
@@ -86,7 +86,7 @@ class equiposC extends Controller {
     }
 
     public function deleteTeam(Request $request) {
-        if (miembroEquipo::where('idEquipo', '=', $request->idEquipo)->delete()) {
+        if (miembroEquipo::where('id_equipo', '=', $request->idEquipo)->delete()) {
             if (equipo::where('id', '=', $request->idEquipo)->delete()) {
                 return response()->json(['borrado' => 'ok'], 200);
             }
@@ -97,15 +97,15 @@ class equiposC extends Controller {
 
     public function exitTeam(Request $request) {
         //Elimino al jugador de la tabla miembro_equipo
-        if (miembroEquipo::where('idJugador', '=', $request->idJugador)
-                        ->where('idEquipo', '=', $request->idEquipo)
+        if (miembroEquipo::where('id_jugador', '=', $request->idJugador)
+                        ->where('id_equipo', '=', $request->idEquipo)
                         ->delete()) {
             //Compruebo que no sea el último miembro del equipo
             if (sizeof(miembroEquipo::with("miembro")
-                                    ->where('idEquipo', $request->idEquipo)
-                                    ->get()) > 1) {
+                                    ->where('id_equipo', $request->idEquipo)
+                                    ->get()) > 0) {
                 //Si hay mas de un miembro, miro si es el creador
-                if (equipo::where('idCreador', '=', $request->idJugador)) {
+                if (equipo::where('idCreador', '=', $request->idJugador)->first()) {
                     //Si es el creador, le pasamos el admin a otro jugador aleatorio
                     //del equipo
                     if ($this->setNewAdmin($request->idEquipo, $request->idJugador)) {
@@ -115,7 +115,7 @@ class equiposC extends Controller {
                     }
                     return response()->json(['salida' => 'ok'], 200);
                 } else {
-                    return response()->json(['salida' => 'error'], 500);
+                    return response()->json(['salida' => 'ok'], 200);
                 }
             } else {
                 //Si es el ultimo jugador, borramos el equipo directamente
@@ -129,7 +129,7 @@ class equiposC extends Controller {
     public function setNewAdmin($idEquipo, $idJugador) {
         //Obtenemos los nombres de los jugadores que pertenecen a un equipo concreto
         $miembros = miembroEquipo::with("miembro")
-                ->where('idEquipo', '=', $idEquipo)
+                ->where('id_equipo', '=', $idEquipo)
                 ->get();
         $alea = rand(0, sizeof($miembros) - 1);
 
@@ -190,14 +190,14 @@ class equiposC extends Controller {
         if ($equipo != null) {
             $idEquipo = $equipo->id;
             //Obtenemos los miembros del equipo
-            $miembros = miembroEquipo::where('idEquipo', '=', $idEquipo)->get();
+            $miembros = miembroEquipo::where('id_equipo', '=', $idEquipo)->get();
             //Comprobamos si hay miembros y los miembros son menores que el maximo de jugadores
             if (sizeof($miembros) > 0 && sizeof($miembros) < $equipo->max_players) {
                 $existe = false;
                 //Miramos todos los miembros de ese equipo
                 foreach ($miembros as $i => $miembro) {
                     //Si hay algun miembro que tiene el mismo id
-                    if ($miembro->idJugador == $idJugador) {
+                    if ($miembro->id_jugador == $idJugador) {
                         $existe = true;
                         //Devolvemos error
                         return response()->json(['unirse' => false], 403);
@@ -209,9 +209,9 @@ class equiposC extends Controller {
                     $total = miembroEquipo::get();
                     //Creamos el registro
                     $newMember = new miembroEquipo([
-                        'id' => sizeof($total) + 1,
-                        'idEquipo' => $idEquipo,
-                        'idJugador' => $idJugador,
+                        'id' => miembroEquipo::orderBy('id', 'desc')->first()->id + 1,
+                        'id_equipo' => $idEquipo,
+                        'id_jugador' => $idJugador,
                     ]);
                     //Salvamos en la BBDD
                     $newMember->save();
@@ -244,11 +244,12 @@ class equiposC extends Controller {
             //Si no tiene equipos en los cuales sea creador con esa ID de juego
         } else {
             //Obtenemos el total de equipo
-            $totalEquipos = equipo::get();
+            $totalEquipos = equipo::orderBy('id', 'desc')->first();
+//            return response()->json(['total' => $totalEquipos],200);
 
             //Creamos el nuevo equipo
             $newTeam = new equipo([
-                'id' => sizeof($totalEquipos) + 1,
+                'id' => $totalEquipos->id + 1,
                 'nombre' => $nombre,
                 'idCreador' => $idCreador,
                 'idJuego' => $idJuego,
@@ -258,11 +259,12 @@ class equiposC extends Controller {
 
             //Si lo guarda bien
             if ($newTeam->save()) {
+//                return response()->json(['llegamos' => true],200);
                 //Creamos el miembro nuevo
                 $miembroNuevo = new miembroEquipo([
-                    'id' => sizeof(miembroEquipo::get()) + 1,
-                    'idEquipo' => sizeof($totalEquipos) + 1,
-                    'idJugador' => $idCreador
+                    'id' => miembroEquipo::orderBy('id', 'desc')->first()->id + 1,
+                    'id_equipo' => $totalEquipos->id + 1,
+                    'id_jugador' => $idCreador
                 ]);
                 //Si lo guarda bien
                 if ($miembroNuevo->save()) {
