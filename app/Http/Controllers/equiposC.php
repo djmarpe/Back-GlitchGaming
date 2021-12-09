@@ -14,7 +14,7 @@ class equiposC extends Controller {
     public function getEquipos(Request $request) {
         //Obtengo todos los equipos en los que estoy
         $equipos = miembroEquipo::with("equipos")
-                ->where("idJugador", $request->id)
+                ->where("id_jugador", $request->id)
                 ->get();
 
         //Creo el array a devolver
@@ -30,7 +30,7 @@ class equiposC extends Controller {
             $juego = juego::where('id', json_decode($equipo->equipos[0]->idJuego))->first();
 
             //Obtengo cuantos miembros hay en el equipo
-            $cuantos = miembroEquipo::where("idEquipo", json_decode($equipo->equipos[0]->id))->count();
+            $cuantos = miembroEquipo::where("id_equipo", json_decode($equipo->equipos[0]->id))->count();
 
             //Monto el array del equipo
             $teams = [
@@ -53,7 +53,7 @@ class equiposC extends Controller {
     public function getMembers(Request $request) {
         //Obtenemos los nombres de los jugadores que pertenecen a un equipo concreto
         $miembros = miembroEquipo::with("miembro")
-                ->where('idEquipo', $request->idEquipo)
+                ->where('id_equipo', $request->idEquipo)
                 ->get();
 
         $return = [];
@@ -64,7 +64,7 @@ class equiposC extends Controller {
 //            return response()->json(["miembro" => User::where('id','=',$miembro->id)->first()->nombreUsuario], 200);
             $miembro = [
                 "id" => $miembro->id,
-                "nombreUsuario" => User::where('id','=',$miembro->id)->first()->nombreUsuario
+                "nombreUsuario" => User::where('id', '=', $miembro->id)->first()->nombreUsuario
 //                "nombreUsuario" => $miembro->miembro->nombreUsuario
             ];
             $return = $return + [
@@ -75,8 +75,8 @@ class equiposC extends Controller {
     }
 
     public function deleteMembers(Request $request) {
-        if (miembroEquipo::where('idEquipo', '=', $request->idEquipo)
-                        ->where('idJugador', '=', $request->idJugador)
+        if (miembroEquipo::where('id_equipo', '=', $request->idEquipo)
+                        ->where('id_jugador', '=', $request->idJugador)
                         ->delete()) {
 
             return response()->json(['borrado' => 'ok'], 200);
@@ -293,7 +293,7 @@ class equiposC extends Controller {
                 'idJuego' => $miEquipo[0]->idJuego,
                 'max_players' => $miEquipo[0]->max_players,
                 'participantes' => sizeof(miembroEquipo::where('idEquipo', '=', $miEquipo[0]->id)->get()),
-                'pertenece' => sizeof(torneo_equipo::where('id_equipo','=',$miEquipo[0]->id)->where('id_torneo','=',$request->idTorneo)->get())
+                'pertenece' => sizeof(torneo_equipo::where('id_equipo', '=', $miEquipo[0]->id)->where('id_torneo', '=', $request->idTorneo)->get())
             ];
             return response()->json(['miEquipo' => $miEquipoAux], 200);
 

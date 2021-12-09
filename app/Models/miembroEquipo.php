@@ -11,8 +11,8 @@ class miembroEquipo extends Model
     protected $table = 'miembro_equipo';
     protected $fillable = [
         'id',
-        'idEquipo',
-        'idJugador'
+        'id_equipo',
+        'id_jugador'
     ];
     protected $hidden = [
         'created_at',
@@ -20,7 +20,7 @@ class miembroEquipo extends Model
     ];
     
     public function equipos(){
-        return $this->hasMany('App\Models\equipo','id','idEquipo');
+        return $this->hasMany('App\Models\equipo','id','id_equipo');
     }
 
 //    public function equipo() {
@@ -28,6 +28,6 @@ class miembroEquipo extends Model
 //    }
     
     public function miembro(){
-        return $this->hasOne('App\Models\User', 'id','idJugador');
+        return $this->hasOne('App\Models\User', 'id','id_jugador');
     }
 }
