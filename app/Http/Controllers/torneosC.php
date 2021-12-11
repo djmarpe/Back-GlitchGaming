@@ -370,9 +370,9 @@ class torneosC extends Controller {
     }
 
     public function pertenezco1vs1(Request $request) {
-        $existe = torneo_equipo::where('id_torneo', '=', $request->idTorneo)->where('id_jugador', '=', $request->idJugador)->get();
+//        $existe = torneo_equipo::where('id_torneo', '=', $request->idTorneo)->where('id_jugador', '=', $request->idJugador)->get();
 
-        if (sizeof($existe) > 0) {
+        if (sizeof(torneo_equipo::where('id_torneo', '=', $request->idTorneo)->where('id_jugador', '=', $request->idJugador)->get()) > 0) {
             return response()->json(['pertenezco1vs1' => true], 200);
         } else {
             return response()->json(['pertenezco1vs1' => false], 200);
@@ -386,19 +386,24 @@ class torneosC extends Controller {
             $idEquipo = 0;
             //Obtengo todos los equipos que estan en el torneo
             $todosEquipos = torneo_equipo::where('id_torneo', '=', $request->id)->get();
+
             for ($i = 0; $i < sizeof($todosEquipos); $i++) {
                 $idEquipo = 0;
                 $miembros = [];
                 $equipo = $todosEquipos[$i];
                 $idEquipo = $todosEquipos[$i]->id_equipo;
-                $miembrosEquipo = miembroEquipo::where('idEquipo', '=', $idEquipo)->get();
+                $miembrosEquipo = miembroEquipo::where('id_equipo', '=', $idEquipo)->get();
+//                return response()->json(['idJugador' => $miembrosEquipo]);
                 for ($j = 0; $j < sizeof($miembrosEquipo); $j++) {
                     //Obtengo cada nombre de Valorant de cada jugador
-                    $valorantName = User::where('id', '=', $miembrosEquipo[$j]->idJugador)->first()->valorant;
+
+                    $valorantName = User::where('id', '=', $miembrosEquipo[$j]->id_jugador)->first()->valorant;
                     //Obtengo sus stats
                     $rango = $this->valorantStats($valorantName);
                     if (empty($rango)) {
-                        return response()->json(['rango' => 'vacio ' . $miembrosEquipo[$j]->idJugador], 500);
+                        if (torneos::where('id', '=', $request->id)->update(['estado' => 0])) {
+                            return response()->json(['rango' => 'vacio ' . $miembrosEquipo[$j]->id_jugador], 200);
+                        }
                     } else {
                         $miembros = $miembros + [
                             $j => $rango['rank']
@@ -1071,21 +1076,20 @@ class torneosC extends Controller {
                     }
                 }
             }
-            
-            if($completo){
-                $encuentro = new encuentro([
-                'id_fase' => $fase->id,
-                'id_equipo1' => $params->idEquipo,
-                'id_equipo2' => null,
-                'resultado_equipo1' => 0,
-                'resultado_equipo2' => 0
-            ]);
 
-            if ($encuentro->save()) {
-                return response()->json(['pasa' => true], 200);
+            if ($completo) {
+                $encuentro = new encuentro([
+                    'id_fase' => $fase->id,
+                    'id_equipo1' => $params->idEquipo,
+                    'id_equipo2' => null,
+                    'resultado_equipo1' => 0,
+                    'resultado_equipo2' => 0
+                ]);
+
+                if ($encuentro->save()) {
+                    return response()->json(['pasa' => true], 200);
+                }
             }
-            }
-            
         } else {
             $encuentro = new encuentro([
                 'id_fase' => $fase->id,

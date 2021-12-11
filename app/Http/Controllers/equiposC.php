@@ -294,7 +294,7 @@ class equiposC extends Controller {
                 'idCreador' => $miEquipo[0]->idCreador,
                 'idJuego' => $miEquipo[0]->idJuego,
                 'max_players' => $miEquipo[0]->max_players,
-                'participantes' => sizeof(miembroEquipo::where('idEquipo', '=', $miEquipo[0]->id)->get()),
+                'participantes' => sizeof(miembroEquipo::where('id_equipo', '=', $miEquipo[0]->id)->get()),
                 'pertenece' => sizeof(torneo_equipo::where('id_equipo', '=', $miEquipo[0]->id)->where('id_torneo', '=', $request->idTorneo)->get())
             ];
             return response()->json(['miEquipo' => $miEquipoAux], 200);
@@ -302,7 +302,7 @@ class equiposC extends Controller {
             //Si no soy dueño de ningun equipo
         } else {
             //Miro si pertenezco a algun equipo
-            $equiposPertenezco = miembroEquipo::where('idJugador', '=', $request->idJugador)->get();
+            $equiposPertenezco = miembroEquipo::where('id_jugador', '=', $request->idJugador)->get();
 //            return response()->json(['equipos' => $equiposPertenezco], 200);
             //Creo el array que va a tener los equipos a los que pertenezco
             $return = [];
