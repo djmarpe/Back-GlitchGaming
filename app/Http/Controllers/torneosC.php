@@ -402,7 +402,8 @@ class torneosC extends Controller {
                     $rango = $this->valorantStats($valorantName);
                     if (empty($rango)) {
                         if (torneos::where('id', '=', $request->id)->update(['estado' => 0])) {
-                            return response()->json(['rango' => 'vacio ' . $miembrosEquipo[$j]->id_jugador], 200);
+                            
+                            return response()->json(['rango' => 'vacio ' . $miembrosEquipo[$j]->id_jugador], 500);
                         }
                     } else {
                         $miembros = $miembros + [
